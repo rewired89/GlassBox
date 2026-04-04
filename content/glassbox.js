@@ -87,26 +87,30 @@
   function getTacticIcon(k)  { return TACTIC_ICONS[k]  || '⚠️'; }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // STORAGE  (routed through background service worker → chrome.storage.local)
+  // STORAGE  (chrome.storage.local — shared between content script and popup)
   //
-  // Content scripts run under twitter.com's origin, so their IndexedDB is
-  // completely separate from the extension popup's IndexedDB. We route all
-  // writes through the background service worker which uses chrome.storage.local
-  // — accessible from both the content script and the popup.
+  // chrome.storage.local is extension storage, NOT origin-scoped like IndexedDB.
+  // Content scripts, background, and popup all access the same store directly.
   // ════════════════════════════════════════════════════════════════════════════
 
-  function recordPostView(params) {
-    chrome.runtime.sendMessage(
-      { type: 'RECORD_POST_VIEW', payload: { ...params, timestamp: Date.now() } },
-      () => { void chrome.runtime.lastError; } // fire-and-forget, suppress errors
-    );
+  const STORAGE_KEY = 'gb_post_views';
+  const MAX_DAYS    = 90;
+
+  async function recordPostView(params) {
+    try {
+      const data   = { ...params, timestamp: Date.now() };
+      const result = await chrome.storage.local.get(STORAGE_KEY);
+      const views  = result[STORAGE_KEY] || [];
+      views.push(data);
+      const cutoff  = Date.now() - MAX_DAYS * 24 * 60 * 60 * 1000;
+      await chrome.storage.local.set({ [STORAGE_KEY]: views.filter(v => v.timestamp >= cutoff) });
+    } catch {
+      // storage failure is non-critical
+    }
   }
 
   function recordCardInteraction(cardId, action) {
-    chrome.runtime.sendMessage(
-      { type: 'RECORD_CARD_INTERACTION', payload: { card_id: cardId, action, timestamp: Date.now() } },
-      () => { void chrome.runtime.lastError; }
-    );
+    // Phase 2: track card engagement in chrome.storage.local
   }
 
   const DEFAULT_SETTINGS = {
@@ -320,7 +324,7 @@
       e.stopPropagation();
       const expanded = wrap.classList.toggle('gb-card--expanded');
       wrap.querySelector('.gb-card__trigger').setAttribute('aria-expanded', expanded);
-      if (expanded) recordCardInteraction(id, 'expand').catch(() => {});
+      if (expanded) recordCardInteraction(id, 'expand');
     });
 
     return wrap;
@@ -401,7 +405,7 @@
         <div class="gb-popover__title">⚠️ Manipulation Detected</div>
         <button class="gb-popover__close">✕</button>
       </div>
-      <div class="gb-popover__meta">${result.tactics.length} tactic(s) &bull; ${Math.round(result.confidence * 100)}% confidence</div>
+      <div class="gb-popover__meta">${result.tactics.length} manipulation ${result.tactics.length === 1 ? 'tactic' : 'tactics'} detected</div>
       <hr class="gb-popover__divider">
       <ul class="gb-popover__list" style="display:flex;flex-direction:column;gap:8px">
         ${result.tactics.slice(0, 4).map(t => `
@@ -464,7 +468,7 @@
     if (hasLowCred)      findings.push({ icon: '⚠️', text: `Source rated ${credibility.score}/10 credibility`, detail: credibility.label });
     if (hasToxic)        findings.push({ icon: '🚫', text: 'Contains potentially harmful language', detail: null });
     else if (hasSensitive) findings.push({ icon: '💬', text: 'Contains language with historical or social weight', detail: null });
-    if (hasManipulation) findings.push({ icon: '🎭', text: `${manipulation.tactics.length} manipulation tactic(s) detected`,
+    if (hasManipulation) findings.push({ icon: '🎭', text: `${manipulation.tactics.length} manipulation ${manipulation.tactics.length === 1 ? 'tactic' : 'tactics'} detected`,
                                          detail: manipulation.tactics.slice(0, 2).map(t => t.label).join(', ') });
 
     const findingsHTML = findings.length ? `
@@ -597,7 +601,7 @@
       user_engaged: false,
       engagement_type: 'view',
       post_text_hash: hashString(text.slice(0, 100)),
-    }).catch(() => {});
+    });
   }
 
   // ════════════════════════════════════════════════════════════════════════════
