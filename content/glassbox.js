@@ -87,48 +87,26 @@
   function getTacticIcon(k)  { return TACTIC_ICONS[k]  || '⚠️'; }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // STORAGE  (IndexedDB + chrome.storage)
+  // STORAGE  (routed through background service worker → chrome.storage.local)
+  //
+  // Content scripts run under twitter.com's origin, so their IndexedDB is
+  // completely separate from the extension popup's IndexedDB. We route all
+  // writes through the background service worker which uses chrome.storage.local
+  // — accessible from both the content script and the popup.
   // ════════════════════════════════════════════════════════════════════════════
 
-  const DB_NAME = 'glassbox', DB_VERSION = 1;
-  const STORES = { POST_VIEWS: 'post_views', CARD_INTERACTIONS: 'card_interactions' };
-
-  let _db = null;
-  function openDB() {
-    if (_db) return Promise.resolve(_db);
-    return new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = e => {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains(STORES.POST_VIEWS)) {
-          const s = db.createObjectStore(STORES.POST_VIEWS, { keyPath: 'id', autoIncrement: true });
-          s.createIndex('timestamp', 'timestamp');
-        }
-        if (!db.objectStoreNames.contains(STORES.CARD_INTERACTIONS)) {
-          const s = db.createObjectStore(STORES.CARD_INTERACTIONS, { keyPath: 'id', autoIncrement: true });
-          s.createIndex('card_id', 'card_id');
-        }
-      };
-      req.onsuccess = e => { _db = e.target.result; resolve(_db); };
-      req.onerror  = e => reject(e.target.error);
-    });
-  }
-
-  function idbPut(storeName, data) {
-    return openDB().then(db => new Promise((resolve, reject) => {
-      const tx  = db.transaction(storeName, 'readwrite');
-      const req = tx.objectStore(storeName).put(data);
-      req.onsuccess = () => resolve(req.result);
-      req.onerror   = () => reject(req.error);
-    }));
-  }
-
   function recordPostView(params) {
-    return idbPut(STORES.POST_VIEWS, { ...params, timestamp: Date.now() });
+    chrome.runtime.sendMessage(
+      { type: 'RECORD_POST_VIEW', payload: { ...params, timestamp: Date.now() } },
+      () => { void chrome.runtime.lastError; } // fire-and-forget, suppress errors
+    );
   }
 
   function recordCardInteraction(cardId, action) {
-    return idbPut(STORES.CARD_INTERACTIONS, { card_id: cardId, action, timestamp: Date.now() });
+    chrome.runtime.sendMessage(
+      { type: 'RECORD_CARD_INTERACTION', payload: { card_id: cardId, action, timestamp: Date.now() } },
+      () => { void chrome.runtime.lastError; }
+    );
   }
 
   const DEFAULT_SETTINGS = {
@@ -433,7 +411,7 @@
             </div>
           </li>`).join('')}
       </ul>
-      <div class="gb-popover__meta" style="margin-top:10px;font-style:italic">Detection may not be perfect.</div>`;
+      <div class="gb-popover__meta" style="margin-top:10px">Rated by NewsGuard · MBFC · Ad Fontes</div>`;
 
     pop.querySelector('.gb-popover__close').addEventListener('click', removePopover);
     document.body.appendChild(pop);
@@ -520,7 +498,7 @@
         <button class="gb-modal__btn gb-modal__btn--secondary" data-action="cancel">Cancel</button>
         <button class="gb-modal__btn gb-modal__btn--proceed"   data-action="proceed">Post anyway</button>
       </div>
-      <div style="font-size:10px;color:#374151;margin-top:12px;text-align:center">GlassBox &bull; Detection may not be perfect.</div>`;
+      <div style="font-size:10px;color:#374151;margin-top:12px;text-align:center">GlassBox &bull; Helping you think before you post.</div>`;
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
