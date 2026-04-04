@@ -3,7 +3,7 @@
  * Aggregates user behavior patterns and generates discrepancy reports.
  */
 
-import { getAllPostViews, getSelfValues, idbPut } from '../lib/storage.js';
+import { getAllPostViews, getSelfValues } from '../lib/storage.js';
 
 /**
  * Analyze the user's behavior over the last N days and return a pattern report.

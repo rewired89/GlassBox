@@ -90,7 +90,6 @@ function watchComposeBox() {
 }
 
 async function hookComposeSubmit(btn) {
-  const { getSettings } = await import('../../lib/storage.js');
   const settings = await getSettings();
   if (!settings.prePostReflection) return;
 
