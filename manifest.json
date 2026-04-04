@@ -26,10 +26,9 @@
         "https://twitter.com/*",
         "https://x.com/*"
       ],
-      "js": ["content/injectors/twitter.js"],
+      "js": ["content/glassbox.js"],
       "css": ["content/ui/styles.css"],
-      "run_at": "document_idle",
-      "type": "module"
+      "run_at": "document_idle"
     }
   ],
   "permissions": [
