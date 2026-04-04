@@ -1,0 +1,284 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "updated": "2026-04-04",
+    "sources": ["NewsGuard", "Media Bias Fact Check", "Ad Fontes Media"]
+  },
+  "domains": {
+    "nytimes.com": {
+      "score": 8.5,
+      "bias": "Center-Left",
+      "label": "New York Times",
+      "fact_check_record": "High accuracy",
+      "ownership": "Public company",
+      "funding": ["Subscriptions", "Advertising"],
+      "retraction_rate": 0.02,
+      "strengths": ["Strong fact-checking", "Transparent corrections policy", "Professional standards"],
+      "considerations": ["Center-left editorial bias", "Corporate ownership"]
+    },
+    "washingtonpost.com": {
+      "score": 8.2,
+      "bias": "Center-Left",
+      "label": "Washington Post",
+      "fact_check_record": "High accuracy",
+      "ownership": "Jeff Bezos",
+      "funding": ["Subscriptions", "Advertising"],
+      "retraction_rate": 0.03,
+      "strengths": ["Dedicated fact-checking team", "Strong sourcing standards"],
+      "considerations": ["Center-left bias", "Private ownership"]
+    },
+    "wsj.com": {
+      "score": 8.3,
+      "bias": "Center-Right",
+      "label": "Wall Street Journal",
+      "fact_check_record": "High accuracy",
+      "ownership": "News Corp (Murdoch)",
+      "funding": ["Subscriptions", "Advertising"],
+      "retraction_rate": 0.02,
+      "strengths": ["Strong financial reporting", "Rigorous sourcing"],
+      "considerations": ["Center-right editorial bias", "Murdoch ownership"]
+    },
+    "reuters.com": {
+      "score": 9.2,
+      "bias": "Center",
+      "label": "Reuters",
+      "fact_check_record": "Excellent accuracy",
+      "ownership": "Thomson Reuters",
+      "funding": ["Subscriptions", "Licensing"],
+      "retraction_rate": 0.01,
+      "strengths": ["Wire service standards", "Global coverage", "Minimal bias"],
+      "considerations": ["Corporate ownership"]
+    },
+    "apnews.com": {
+      "score": 9.1,
+      "bias": "Center",
+      "label": "Associated Press",
+      "fact_check_record": "Excellent accuracy",
+      "ownership": "Non-profit cooperative",
+      "funding": ["Member fees", "Licensing"],
+      "retraction_rate": 0.01,
+      "strengths": ["Non-profit structure", "Rigorous standards", "Global network"],
+      "considerations": []
+    },
+    "bbc.com": {
+      "score": 8.7,
+      "bias": "Center",
+      "label": "BBC",
+      "fact_check_record": "High accuracy",
+      "ownership": "Public (UK government charter)",
+      "funding": ["License fee", "Commercial"],
+      "retraction_rate": 0.02,
+      "strengths": ["Public broadcaster", "Strong editorial guidelines", "International coverage"],
+      "considerations": ["UK-centric perspective", "Government charter funding"]
+    },
+    "bbc.co.uk": {
+      "score": 8.7,
+      "bias": "Center",
+      "label": "BBC",
+      "fact_check_record": "High accuracy",
+      "ownership": "Public (UK government charter)",
+      "funding": ["License fee", "Commercial"],
+      "retraction_rate": 0.02,
+      "strengths": ["Public broadcaster", "Strong editorial guidelines"],
+      "considerations": ["Government charter funding"]
+    },
+    "theguardian.com": {
+      "score": 7.8,
+      "bias": "Center-Left",
+      "label": "The Guardian",
+      "fact_check_record": "Good accuracy",
+      "ownership": "Scott Trust (non-profit)",
+      "funding": ["Donations", "Subscriptions"],
+      "retraction_rate": 0.04,
+      "strengths": ["Non-profit ownership", "Investigative journalism"],
+      "considerations": ["Left-leaning editorial stance"]
+    },
+    "foxnews.com": {
+      "score": 4.2,
+      "bias": "Right",
+      "label": "Fox News",
+      "fact_check_record": "Mixed accuracy",
+      "ownership": "Fox Corporation (Murdoch)",
+      "funding": ["Advertising", "Cable fees"],
+      "retraction_rate": 0.12,
+      "strengths": ["High production values"],
+      "considerations": ["Strong right-wing bias", "Multiple fact-check failures", "Opinion presented as news"]
+    },
+    "msnbc.com": {
+      "score": 5.1,
+      "bias": "Left",
+      "label": "MSNBC",
+      "fact_check_record": "Mixed accuracy",
+      "ownership": "NBC Universal (Comcast)",
+      "funding": ["Advertising", "Cable fees"],
+      "retraction_rate": 0.08,
+      "strengths": ["Breaking news coverage"],
+      "considerations": ["Strong left-wing opinion content", "Opinion-heavy programming"]
+    },
+    "cnn.com": {
+      "score": 6.5,
+      "bias": "Center-Left",
+      "label": "CNN",
+      "fact_check_record": "Generally accurate",
+      "ownership": "Warner Bros. Discovery",
+      "funding": ["Advertising", "Cable fees"],
+      "retraction_rate": 0.06,
+      "strengths": ["Breaking news", "Dedicated fact-checkers"],
+      "considerations": ["Center-left bias", "Sensationalist framing at times"]
+    },
+    "breitbart.com": {
+      "score": 1.8,
+      "bias": "Far-Right",
+      "label": "Breitbart",
+      "fact_check_record": "Low accuracy",
+      "ownership": "Private",
+      "funding": ["Advertising"],
+      "retraction_rate": 0.28,
+      "strengths": [],
+      "considerations": ["Extreme right-wing bias", "Frequent misinformation", "Misleading headlines"]
+    },
+    "infowars.com": {
+      "score": 0.5,
+      "bias": "Conspiracy/Far-Right",
+      "label": "InfoWars",
+      "fact_check_record": "Very low accuracy",
+      "ownership": "Free Speech Systems (Alex Jones)",
+      "funding": ["Product sales", "Donations"],
+      "retraction_rate": 0.6,
+      "strengths": [],
+      "considerations": ["Conspiracy theories", "Extreme misinformation", "Multiple legal judgments for defamation"]
+    },
+    "naturalnews.com": {
+      "score": 0.8,
+      "bias": "Conspiracy",
+      "label": "Natural News",
+      "fact_check_record": "Very low accuracy",
+      "ownership": "Private",
+      "funding": ["Product sales", "Advertising"],
+      "retraction_rate": 0.55,
+      "strengths": [],
+      "considerations": ["Health misinformation", "Anti-vaccine content", "Conspiracy theories"]
+    },
+    "theatlantic.com": {
+      "score": 7.9,
+      "bias": "Center-Left",
+      "label": "The Atlantic",
+      "fact_check_record": "Good accuracy",
+      "ownership": "Emerson Collective (Laurene Powell Jobs)",
+      "funding": ["Subscriptions", "Donations"],
+      "retraction_rate": 0.03,
+      "strengths": ["Long-form journalism", "Editorial rigor"],
+      "considerations": ["Center-left perspective", "Private ownership"]
+    },
+    "politico.com": {
+      "score": 7.5,
+      "bias": "Center",
+      "label": "Politico",
+      "fact_check_record": "Good accuracy",
+      "ownership": "Axel Springer",
+      "funding": ["Subscriptions", "Advertising"],
+      "retraction_rate": 0.03,
+      "strengths": ["Political reporting", "Insider sourcing"],
+      "considerations": ["DC-centric", "German media ownership"]
+    },
+    "propublica.org": {
+      "score": 9.0,
+      "bias": "Center-Left",
+      "label": "ProPublica",
+      "fact_check_record": "High accuracy",
+      "ownership": "Non-profit",
+      "funding": ["Donations", "Grants"],
+      "retraction_rate": 0.01,
+      "strengths": ["Investigative journalism", "Non-profit structure", "Pulitzer Prize winner"],
+      "considerations": ["Center-left perspective"]
+    },
+    "snopes.com": {
+      "score": 8.8,
+      "bias": "Center",
+      "label": "Snopes",
+      "fact_check_record": "High accuracy",
+      "ownership": "Snopes Media Group",
+      "funding": ["Advertising", "Subscriptions"],
+      "retraction_rate": 0.02,
+      "strengths": ["Dedicated fact-checking", "Long track record", "Transparent methodology"],
+      "considerations": []
+    },
+    "factcheck.org": {
+      "score": 9.0,
+      "bias": "Center",
+      "label": "FactCheck.org",
+      "fact_check_record": "High accuracy",
+      "ownership": "Annenberg Public Policy Center (non-profit)",
+      "funding": ["Grants", "Donations"],
+      "retraction_rate": 0.01,
+      "strengths": ["Academic affiliation", "Non-partisan", "Rigorous methodology"],
+      "considerations": []
+    },
+    "politifact.com": {
+      "score": 8.6,
+      "bias": "Center",
+      "label": "PolitiFact",
+      "fact_check_record": "High accuracy",
+      "ownership": "Poynter Institute (non-profit)",
+      "funding": ["Grants", "Donations"],
+      "retraction_rate": 0.02,
+      "strengths": ["Pulitzer Prize winner", "Transparent ratings", "Non-profit"],
+      "considerations": ["Perception of slight left-lean from some critics"]
+    },
+    "rt.com": {
+      "score": 1.5,
+      "bias": "State Media (Russia)",
+      "label": "RT (Russia Today)",
+      "fact_check_record": "Low accuracy",
+      "ownership": "Russian government",
+      "funding": ["Russian federal budget"],
+      "retraction_rate": 0.4,
+      "strengths": [],
+      "considerations": ["Russian state propaganda", "Designated foreign agent", "Misinformation campaigns", "Banned in EU"]
+    },
+    "theonion.com": {
+      "score": null,
+      "bias": "Satire",
+      "label": "The Onion",
+      "fact_check_record": "Satire",
+      "ownership": "Onion Inc",
+      "funding": ["Advertising"],
+      "retraction_rate": null,
+      "strengths": ["Clearly labeled satire"],
+      "considerations": ["Satirical content — not intended as factual news"]
+    },
+    "babylonbee.com": {
+      "score": null,
+      "bias": "Satire (Right-leaning)",
+      "label": "Babylon Bee",
+      "fact_check_record": "Satire",
+      "ownership": "Private",
+      "funding": ["Subscriptions", "Advertising"],
+      "retraction_rate": null,
+      "strengths": ["Clearly labeled satire"],
+      "considerations": ["Conservative satire — sometimes mistaken for real news"]
+    },
+    "npr.org": {
+      "score": 8.4,
+      "bias": "Center-Left",
+      "label": "NPR",
+      "fact_check_record": "High accuracy",
+      "ownership": "Non-profit public radio",
+      "funding": ["Public funding", "Member stations", "Donations"],
+      "retraction_rate": 0.02,
+      "strengths": ["Public media structure", "Editorial independence", "Strong sourcing"],
+      "considerations": ["Center-left editorial bias"]
+    },
+    "pbs.org": {
+      "score": 8.6,
+      "bias": "Center",
+      "label": "PBS",
+      "fact_check_record": "High accuracy",
+      "ownership": "Non-profit public broadcaster",
+      "funding": ["Public funding", "Donations"],
+      "retraction_rate": 0.02,
+      "strengths": ["Public broadcaster", "Non-profit", "Strong editorial standards"],
+      "considerations": []
+    }
+  }
+}

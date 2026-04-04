@@ -1,0 +1,258 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "updated": "2026-04-04"
+  },
+  "cards": [
+    {
+      "id": "native_american_indigeneity",
+      "trigger_phrases": [
+        "go back to your country",
+        "go back where you came from",
+        "real Americans",
+        "true Americans",
+        "deport natives",
+        "illegal natives",
+        "native immigrants"
+      ],
+      "card": {
+        "hook": "Who were here first?",
+        "title": "Indigenous America: 15,000 Years of History",
+        "timeline": [
+          { "date": "~13,000 BCE", "event": "Indigenous peoples settle the Americas — thousands of years before any European contact" },
+          { "date": "1492", "event": "European contact begins; Columbus reaches the Caribbean" },
+          { "date": "1830", "event": "Indian Removal Act forces mass relocation of tribes from ancestral lands" },
+          { "date": "1887", "event": "Dawes Act breaks up tribal land ownership, reducing Indigenous land by 90 million acres" },
+          { "date": "1924", "event": "Native Americans finally granted US citizenship — in their own ancestral homeland" },
+          { "date": "Today", "event": "~3.7 million Native Americans remain. Many nations maintain sovereign governments." }
+        ],
+        "irony_highlight": "Calling Indigenous people 'illegal' reverses 15,000 years of documented history. By any historical standard, they were here first.",
+        "empathy_angle": "Imagine being told you don't belong in the land your ancestors have called home for 150 centuries.",
+        "sources": [
+          "National Museum of the American Indian (Smithsonian)",
+          "Library of Congress",
+          "US Census Bureau"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'go back to your country', try: 'I have concerns about immigration policy because...'",
+        "Instead of 'real Americans', try: 'US citizens' or 'people born here'"
+      ]
+    },
+    {
+      "id": "climate_change_consensus",
+      "trigger_phrases": [
+        "climate change is a hoax",
+        "climate hoax",
+        "global warming is fake",
+        "climate scam",
+        "climate fraud",
+        "global cooling",
+        "climate change is natural"
+      ],
+      "card": {
+        "hook": "What does the scientific record actually show?",
+        "title": "Climate Change: The Scientific Consensus",
+        "timeline": [
+          { "date": "1896", "event": "Svante Arrhenius first calculates greenhouse effect of CO₂ — his math still holds" },
+          { "date": "1958", "event": "Keeling Curve begins tracking atmospheric CO₂; shows steady rise" },
+          { "date": "1988", "event": "NASA scientist James Hansen testifies to Congress: global warming is occurring" },
+          { "date": "2007", "event": "IPCC wins Nobel Peace Prize for climate research; 97% scientific consensus established" },
+          { "date": "2023", "event": "Hottest year on record. 12 of the 13 hottest years ever recorded occurred after 2010." }
+        ],
+        "irony_highlight": "The claim that 97% of climate scientists are coordinating a global hoax requires a conspiracy involving millions of researchers across 195 countries, many of whom are competing with each other.",
+        "empathy_angle": "Coastal and island communities — many of them poor — face loss of their homes to rising seas regardless of the political debate.",
+        "sources": [
+          "NASA Global Climate Change",
+          "NOAA National Centers for Environmental Information",
+          "Intergovernmental Panel on Climate Change (IPCC)",
+          "Skeptical Science (97% consensus peer-reviewed studies)"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'hoax', try: 'I'm skeptical about the causes of climate change because...'",
+        "Instead of 'climate scam', try: 'I question the proposed policy responses to climate change'"
+      ]
+    },
+    {
+      "id": "immigration_history",
+      "trigger_phrases": [
+        "immigrants are criminals",
+        "illegal immigrants commit more crime",
+        "immigration causes crime",
+        "deport them all",
+        "close the border",
+        "immigrant invasion",
+        "they're taking our jobs"
+      ],
+      "card": {
+        "hook": "What does research say about immigration and crime?",
+        "title": "Immigration: History vs. Headlines",
+        "timeline": [
+          { "date": "1850s", "event": "Irish immigrants labeled 'criminals' and 'subhuman' by US media and politicians" },
+          { "date": "1882", "event": "Chinese Exclusion Act — first major law to restrict immigration by ethnicity" },
+          { "date": "1920s", "event": "Italian and Jewish immigrants called 'criminals' and 'racially inferior' by Congress" },
+          { "date": "1942", "event": "Japanese Americans — many born as US citizens — imprisoned in internment camps as 'threats'" },
+          { "date": "2020", "event": "Multiple studies confirm: immigrants (including undocumented) commit crimes at lower rates than native-born citizens" }
+        ],
+        "irony_highlight": "The 'immigrant crime' narrative has been used against every major immigrant group in US history — Irish, Italian, Jewish, Chinese, Japanese, Latino. Each group later became 'real Americans.'",
+        "empathy_angle": "Most immigrants leave everything they know seeking safety or opportunity. The journey itself is extraordinarily dangerous.",
+        "sources": [
+          "Cato Institute: Immigration and Crime (2020)",
+          "National Academy of Sciences: The Integration of Immigrants into American Society",
+          "American Immigration Council",
+          "Stanford Immigration Policy Lab"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'immigrants are criminals', try: 'I have concerns about border security because...'",
+        "Instead of 'deport them all', try: 'I believe immigration enforcement should prioritize...'"
+      ]
+    },
+    {
+      "id": "vaccine_safety",
+      "trigger_phrases": [
+        "vaccines cause autism",
+        "vaccines are poison",
+        "don't vaccinate",
+        "anti-vax",
+        "vaccine injury",
+        "vaccines are dangerous",
+        "natural immunity is better",
+        "vaccines contain",
+        "microchip vaccine"
+      ],
+      "card": {
+        "hook": "How did vaccines change human life expectancy?",
+        "title": "Vaccines: What the Data Shows",
+        "timeline": [
+          { "date": "1796", "event": "Edward Jenner creates first vaccine (smallpox); eventually saves ~5 million lives per year" },
+          { "date": "1955", "event": "Polio vaccine introduced. Polio paralyzed 35,000 Americans per year; now nearly eradicated worldwide." },
+          { "date": "1998", "event": "Andrew Wakefield publishes fraudulent autism-vaccine study. Later retracted; Wakefield lost medical license." },
+          { "date": "2019", "event": "Measles outbreaks rise in areas with low vaccine rates — a disease declared eliminated in 2000" },
+          { "date": "2023", "event": "WHO: vaccines prevent 4-5 million deaths per year. Autism rates unchanged by vaccine status in 95+ studies." }
+        ],
+        "irony_highlight": "The 1998 study linking vaccines to autism was fabricated — its author manipulated data for financial gain. Over 50 studies involving millions of children have found no link.",
+        "empathy_angle": "Parents of children with autism deserve accurate information, not a scapegoat that delays finding real answers.",
+        "sources": [
+          "CDC Vaccine Safety",
+          "WHO Immunization",
+          "The Lancet (Wakefield retraction)",
+          "Cochrane Review: MMR vaccine safety"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'vaccines cause autism', try: 'I have questions about vaccine schedules and would like to discuss them with my doctor'",
+        "Instead of 'don't vaccinate', try: 'I want to understand more about the evidence before deciding'"
+      ]
+    },
+    {
+      "id": "election_integrity",
+      "trigger_phrases": [
+        "stolen election",
+        "rigged election",
+        "election fraud",
+        "voter fraud",
+        "the election was stolen",
+        "dominion voting",
+        "2020 was stolen",
+        "mail-in fraud"
+      ],
+      "card": {
+        "hook": "What did investigations actually find?",
+        "title": "Election Integrity: Following the Evidence",
+        "timeline": [
+          { "date": "Nov 2020", "event": "2020 US election held. 60+ post-election lawsuits filed alleging fraud." },
+          { "date": "Dec 2020", "event": "60+ courts — including judges appointed by Trump — dismiss fraud claims for lack of evidence" },
+          { "date": "Dec 2020", "event": "Trump's own AG William Barr: 'We have not seen fraud on a scale that could have affected the outcome'" },
+          { "date": "Dec 2020", "event": "Trump's own CISA director Chris Krebs calls 2020 'the most secure election in American history'" },
+          { "date": "2022", "event": "Arizona Republican-led Cyber Ninjas audit confirms Biden won Arizona" },
+          { "date": "2023", "event": "Fox News pays $787M to Dominion Voting Systems, admitting on-air claims were false" }
+        ],
+        "irony_highlight": "Fox News privately acknowledged the fraud claims were false while publicly promoting them — a fact revealed in court documents and confirmed by an $787M settlement.",
+        "empathy_angle": "Confidence in elections is foundational to democracy. The best way to protect it is with accurate information about how elections actually work.",
+        "sources": [
+          "CISA (Cybersecurity and Infrastructure Security Agency)",
+          "Federal Election Commission",
+          "US Department of Justice",
+          "Dominion v. Fox News court documents"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'stolen election', try: 'I have concerns about specific aspects of election administration such as...'",
+        "Instead of 'voter fraud', try: 'I'd like to learn more about election security measures'"
+      ]
+    },
+    {
+      "id": "lgbtq_history",
+      "trigger_phrases": [
+        "being gay is a choice",
+        "homosexuality is unnatural",
+        "trans ideology",
+        "groomer",
+        "lgbtq agenda",
+        "gender ideology",
+        "conversion therapy works",
+        "they recruited"
+      ],
+      "card": {
+        "hook": "What do medical organizations say?",
+        "title": "LGBTQ+: Science and History",
+        "timeline": [
+          { "date": "1948", "event": "Alfred Kinsey's research reveals same-sex attraction is common across human populations" },
+          { "date": "1973", "event": "American Psychiatric Association removes homosexuality from its list of disorders" },
+          { "date": "1994", "event": "American Medical Association opposes 'conversion therapy' as ineffective and harmful" },
+          { "date": "2020", "event": "US Supreme Court rules LGBTQ+ workers are protected under civil rights law" },
+          { "date": "2023", "event": "All major medical organizations — AMA, APA, AAP — affirm LGBTQ+ identities are natural human variation" }
+        ],
+        "irony_highlight": "Same-sex behavior has been documented in 1,500+ animal species. The idea that it is 'unnatural' contradicts decades of biological research.",
+        "empathy_angle": "LGBTQ+ youth who feel rejected are 8x more likely to attempt suicide. Acceptance from family cuts that risk dramatically.",
+        "sources": [
+          "American Medical Association",
+          "American Psychological Association",
+          "American Academy of Pediatrics",
+          "Trevor Project research"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'groomer', try expressing specific policy concerns without attacking individuals' identities",
+        "Instead of 'agenda', try: 'I have concerns about specific policies such as...'"
+      ]
+    },
+    {
+      "id": "systemic_racism",
+      "trigger_phrases": [
+        "systemic racism doesn't exist",
+        "racism is over",
+        "reverse racism",
+        "black on black crime",
+        "all lives matter",
+        "there's no racism",
+        "stop playing the race card"
+      ],
+      "card": {
+        "hook": "What does the data show about racial disparities?",
+        "title": "Systemic Racism: Reading the Data",
+        "timeline": [
+          { "date": "1934", "event": "Federal Housing Administration redlining codifies racial segregation in housing — affecting generational wealth" },
+          { "date": "1960s", "event": "Voting Rights Act passes after documented, systematic disenfranchisement of Black voters" },
+          { "date": "1988", "event": "Studies show identical résumés with 'white-sounding' names get 50% more callbacks than 'Black-sounding' names" },
+          { "date": "2020", "event": "COVID-19 reveals stark disparities in healthcare outcomes along racial lines" },
+          { "date": "2023", "event": "Federal Reserve: White families have 6x the median wealth of Black families — a gap that has barely changed since the 1960s" }
+        ],
+        "irony_highlight": "The wealth gap between white and Black families was largely created by specific government policies (redlining, GI Bill exclusions). Denying this history doesn't make the wealth gap disappear.",
+        "empathy_angle": "Most people don't choose the circumstances they're born into. Structural barriers operate regardless of individual attitudes.",
+        "sources": [
+          "Federal Reserve Survey of Consumer Finances",
+          "National Bureau of Economic Research (résumé studies)",
+          "Richard Rothstein: 'The Color of Law'",
+          "Brookings Institution racial wealth gap research"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of 'racism is over', try: 'I think racial disparities have multiple causes including...'",
+        "Instead of 'playing the race card', try: 'Let's look at the data on this specific situation'"
+      ]
+    }
+  ]
+}

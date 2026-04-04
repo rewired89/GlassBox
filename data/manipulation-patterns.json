@@ -1,0 +1,272 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "updated": "2026-04-04"
+  },
+  "tactics": {
+    "emotional_appeal": {
+      "label": "Emotional Appeal",
+      "icon": "😡",
+      "description": "Uses extreme emotional language to bypass critical thinking",
+      "patterns": [
+        "WAKE UP",
+        "they don't want you to know",
+        "share before they delete",
+        "they're hiding",
+        "MUST READ",
+        "BREAKING",
+        "SHOCKING",
+        "you won't believe",
+        "will make you sick",
+        "outrageous",
+        "disgusting",
+        "horrifying",
+        "terrifying",
+        "destroying",
+        "obliterating",
+        "decimating",
+        "EXPOSED",
+        "URGENT",
+        "ALERT",
+        "WARNING"
+      ],
+      "regex_patterns": [
+        "!!{2,}",
+        "\\b[A-Z]{5,}\\b",
+        "\\?{2,}"
+      ],
+      "weight": 1.0
+    },
+    "fear_mongering": {
+      "label": "Fear-Mongering",
+      "icon": "😨",
+      "description": "Uses fear to manipulate opinions and behavior",
+      "patterns": [
+        "they will come for",
+        "coming for your",
+        "great replacement",
+        "replacement theory",
+        "white genocide",
+        "losing our country",
+        "invasion",
+        "invaders",
+        "taking over",
+        "end of",
+        "apocalypse",
+        "existential threat",
+        "civilization will fall",
+        "society will collapse"
+      ],
+      "regex_patterns": [
+        "\\b(they|them|those people) (are|will|want to) (destroy|replace|eliminate|erase)\\b"
+      ],
+      "weight": 1.5
+    },
+    "false_dichotomy": {
+      "label": "False Dichotomy",
+      "icon": "⚖️",
+      "description": "Presents only two options when more exist",
+      "patterns": [
+        "either you're with us",
+        "either with us or against us",
+        "you're either",
+        "if you don't",
+        "love it or leave it",
+        "real Americans or",
+        "patriots or traitors",
+        "you either support",
+        "there are only two",
+        "the only choice is",
+        "simple choice",
+        "black and white"
+      ],
+      "regex_patterns": [
+        "\\b(either|only) .{5,50} or .{5,50}\\b"
+      ],
+      "weight": 1.2
+    },
+    "ad_hominem": {
+      "label": "Ad Hominem",
+      "icon": "🎯",
+      "description": "Attacks the person rather than their argument",
+      "patterns": [
+        "what would you know",
+        "you people",
+        "typical liberal",
+        "typical conservative",
+        "snowflake",
+        "libtard",
+        "RINO",
+        "commie",
+        "fascist",
+        "traitor",
+        "globalist",
+        "elitist",
+        "sheeple",
+        "shill",
+        "bot",
+        "troll",
+        "clown",
+        "idiot",
+        "moron",
+        "stupid people"
+      ],
+      "regex_patterns": [],
+      "weight": 0.8
+    },
+    "appeal_to_authority": {
+      "label": "Questionable Authority",
+      "icon": "🎓",
+      "description": "Cites unqualified or irrelevant authorities",
+      "patterns": [
+        "real doctors say",
+        "many scientists believe",
+        "experts are saying",
+        "researchers have found",
+        "studies show",
+        "Harvard professor",
+        "former FBI",
+        "whistleblower reveals",
+        "insider source"
+      ],
+      "regex_patterns": [
+        "\\b(many|some|top|leading) (experts|scientists|doctors|researchers)\\b"
+      ],
+      "weight": 0.7
+    },
+    "bandwagon": {
+      "label": "Bandwagon",
+      "icon": "🐑",
+      "description": "Claims widespread belief as proof of truth",
+      "patterns": [
+        "everyone knows",
+        "everyone agrees",
+        "nobody believes",
+        "the world knows",
+        "it's common knowledge",
+        "even Democrats admit",
+        "even Republicans admit",
+        "millions of people",
+        "most Americans believe",
+        "the whole country",
+        "join the movement",
+        "wake up like millions"
+      ],
+      "regex_patterns": [
+        "\\b(everyone|nobody|the whole world) (knows|agrees|believes|thinks)\\b"
+      ],
+      "weight": 0.6
+    },
+    "slippery_slope": {
+      "label": "Slippery Slope",
+      "icon": "🎿",
+      "description": "Claims one action will inevitably lead to extreme consequences",
+      "patterns": [
+        "if we allow",
+        "next thing you know",
+        "this will lead to",
+        "what's next",
+        "first they came for",
+        "before long",
+        "inevitably",
+        "the path to",
+        "heading toward",
+        "gateway to",
+        "where does it end"
+      ],
+      "regex_patterns": [
+        "\\b(if|once|when) \\w+ .{5,50} (then|next|soon|eventually)\\b"
+      ],
+      "weight": 0.9
+    },
+    "dehumanization": {
+      "label": "Dehumanizing Language",
+      "icon": "🚫",
+      "description": "Uses language that strips humanity from groups of people",
+      "patterns": [
+        "vermin",
+        "cockroaches",
+        "parasites",
+        "animals",
+        "subhuman",
+        "infestation",
+        "infestation of",
+        "plague",
+        "disease",
+        "inhumane creatures",
+        "they breed like",
+        "swarms of",
+        "horde of",
+        "mob of"
+      ],
+      "regex_patterns": [
+        "\\b(swarm|horde|infestation|plague|vermin|cockroach|parasite)s?\\b"
+      ],
+      "weight": 2.0
+    },
+    "cherry_picking": {
+      "label": "Cherry-Picked Data",
+      "icon": "🍒",
+      "description": "Selects only data that supports one view",
+      "patterns": [
+        "crime statistics show",
+        "the real numbers",
+        "statistics prove",
+        "the data is clear",
+        "one study found",
+        "according to one expert",
+        "if you look at just"
+      ],
+      "regex_patterns": [],
+      "weight": 0.8
+    },
+    "missing_context": {
+      "label": "Missing Context",
+      "icon": "📋",
+      "description": "Presents facts without important surrounding context",
+      "patterns": [
+        "out of context",
+        "what they're not telling you",
+        "the part they left out",
+        "the media won't tell you",
+        "buried the lead",
+        "suppressed information"
+      ],
+      "regex_patterns": [],
+      "weight": 0.7
+    },
+    "conspiracy": {
+      "label": "Conspiracy Framing",
+      "icon": "🕵️",
+      "description": "Promotes unsubstantiated conspiracy theories",
+      "patterns": [
+        "the deep state",
+        "new world order",
+        "globalist agenda",
+        "shadow government",
+        "they control",
+        "the cabal",
+        "the elites are",
+        "plandemic",
+        "scamdemic",
+        "great reset",
+        "chemtrails",
+        "microchip",
+        "5G causes",
+        "false flag",
+        "inside job",
+        "crisis actor",
+        "pizzagate",
+        "QAnon",
+        "WWG1WGA"
+      ],
+      "regex_patterns": [],
+      "weight": 1.8
+    }
+  },
+  "thresholds": {
+    "low": 0.3,
+    "medium": 0.6,
+    "high": 1.0
+  }
+}

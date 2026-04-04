@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlassBox</title>
+  <style>
+    /* ─── Base ──────────────────────────────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1e2028;
+      --surface2: #16181c;
+      --border: #2f3241;
+      --text: #e7e9ea;
+      --text-muted: #9ca3af;
+      --text-dim: #4b5563;
+      --accent: #1d9bf0;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --purple: #a855f7;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      width: 380px;
+      min-height: 520px;
+      overflow-x: hidden;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo__icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #1d9bf0, #a855f7);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .logo__name {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .logo__tagline {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* Toggle */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle__slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+
+    .toggle__slider::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked + .toggle__slider {
+      background: var(--accent);
+    }
+
+    .toggle input:checked + .toggle__slider::before {
+      transform: translateX(16px);
+    }
+
+    /* ─── Tabs ───────────────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .tab:hover { color: var(--text); }
+
+    .tab--active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ─── Panels ─────────────────────────────────────────────────────────────── */
+    .panel {
+      display: none;
+      padding: 14px 16px;
+      animation: panel-in 0.15s ease;
+    }
+
+    .panel--active { display: block; }
+
+    @keyframes panel-in {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Stats cards ─────────────────────────────────────────────────────────── */
+    .period-select {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .period-select__label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .period-select select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-card__value {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .stat-card__label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── Credibility bar ─────────────────────────────────────────────────────── */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .cred-bar-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .cred-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .cred-bar__segment {
+      transition: width 0.4s ease;
+    }
+
+    .cred-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+    }
+
+    .cred-legend__item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+    }
+
+    .cred-legend__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── Tactics list ────────────────────────────────────────────────────────── */
+    .tactic-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .tactic-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .tactic-item:last-child { border-bottom: none; }
+
+    .tactic-item__name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+    }
+
+    .tactic-item__count {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+      border-radius: 6px;
+      padding: 1px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* ─── Empty state ─────────────────────────────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-muted);
+    }
+
+    .empty-state__icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state__title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .empty-state__text {
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ─── Settings ────────────────────────────────────────────────────────────── */
+    .settings-group {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .settings-group__title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      padding: 8px 12px 4px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-row__left {
+      flex: 1;
+      padding-right: 12px;
+    }
+
+    .settings-row__label {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .settings-row__desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    select.settings-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      min-width: 90px;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-top: 4px;
+    }
+
+    .save-btn:hover { background: #1a8cd8; }
+
+    .save-indicator {
+      text-align: center;
+      font-size: 12px;
+      color: var(--green);
+      margin-top: 6px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .save-indicator--visible { opacity: 1; }
+
+    /* ─── Footer ─────────────────────────────────────────────────────────────── */
+    .footer {
+      padding: 8px 16px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .loading::after {
+      content: '...';
+      animation: dots 1s infinite;
+    }
+
+    @keyframes dots {
+      0%, 33% { content: '.'; }
+      34%, 66% { content: '..'; }
+      67%, 100% { content: '...'; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <div class="logo__icon">🔍</div>
+      <div>
+        <div class="logo__name">GlassBox</div>
+        <div class="logo__tagline">Manipulation immunity</div>
+      </div>
+    </div>
+    <div class="toggle-wrap">
+      <span id="toggle-label">On</span>
+      <label class="toggle" aria-label="Enable GlassBox">
+        <input type="checkbox" id="master-toggle" checked>
+        <span class="toggle__slider"></span>
+      </label>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab tab--active" data-tab="dashboard" role="tab" aria-selected="true">Dashboard</button>
+    <button class="tab" data-tab="settings" role="tab" aria-selected="false">Settings</button>
+  </nav>
+
+  <!-- Dashboard Panel -->
+  <div class="panel panel--active" id="panel-dashboard" role="tabpanel">
+    <div class="period-select">
+      <span class="period-select__label">Your Information Diet</span>
+      <select id="period-select">
+        <option value="7">7 days</option>
+        <option value="30" selected>30 days</option>
+        <option value="90">90 days</option>
+      </select>
+    </div>
+
+    <div id="dashboard-content">
+      <div class="loading">Loading your data</div>
+    </div>
+  </div>
+
+  <!-- Settings Panel -->
+  <div class="panel" id="panel-settings" role="tabpanel">
+    <div class="settings-group">
+      <div class="settings-group__title">Detection</div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Credibility badges</div>
+          <div class="settings-row__desc">Show source ratings on linked content</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setting-credibility" checked>
+          <span class="toggle__slider"></span>
+        </label>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Manipulation indicators</div>
+          <div class="settings-row__desc">Flag posts using manipulation tactics</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setting-manipulation" checked>
+          <span class="toggle__slider"></span>
+        </label>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Context cards</div>
+          <div class="settings-row__desc">Show historical context for flagged topics</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setting-cards" checked>
+          <span class="toggle__slider"></span>
+        </label>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Pre-post reflection</div>
+          <div class="settings-row__desc">Pause before posting harmful content</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setting-reflection" checked>
+          <span class="toggle__slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group__title">Sensitivity</div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Manipulation threshold</div>
+          <div class="settings-row__desc">How sensitive the detection is</div>
+        </div>
+        <select class="settings-select" id="setting-threshold">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High (strict)</option>
+        </select>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-row__left">
+          <div class="settings-row__label">Min credibility score</div>
+          <div class="settings-row__desc">Flag sources below this rating</div>
+        </div>
+        <select class="settings-select" id="setting-min-cred">
+          <option value="2">2/10</option>
+          <option value="4" selected>4/10</option>
+          <option value="6">6/10</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="save-btn" id="save-settings">Save Settings</button>
+    <div class="save-indicator" id="save-indicator">Settings saved</div>
+  </div>
+
+  <footer class="footer">
+    GlassBox v0.1.0 &bull; All data stored locally
+  </footer>
+
+  <script src="dashboard.js" type="module"></script>
+</body>
+</html>
