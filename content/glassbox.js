@@ -631,36 +631,44 @@
     if (btn.dataset.gbHooked) return;
     btn.dataset.gbHooked = '1';
 
-    btn.addEventListener('click', async e => {
-      const settings = await getCachedSettings();
-      if (!settings.prePostReflection) return;
+    // NOTE: handler must be synchronous so e.preventDefault() fires BEFORE
+    // the event propagates to Twitter's own listeners. Any async work happens
+    // AFTER we've already blocked the event.
+    btn.addEventListener('click', e => {
       if (btn.dataset.gbProceed) return;
 
       const composeEl = document.querySelector(SEL.composeArea);
       const text = composeEl?.textContent?.trim() || '';
       if (text.length < 5) return;
 
-      const [manipulation, toxicity] = await Promise.all([
-        detectManipulation(text),
-        Promise.resolve(analyzeToxicity(text)),
-      ]);
+      // analyzeToxicity is fully synchronous — run it immediately
+      const toxicity = analyzeToxicity(text);
+      if (!toxicity.toxic && !toxicity.sensitive) return;
 
-      const shouldShow =
-        toxicity.toxic || toxicity.sensitive ||
-        (manipulation.is_manipulative && manipulation.level !== 'low');
-
-      if (!shouldShow) return;
-
+      // Block the event NOW, before Twitter's handler sees it
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      showReflectionModal({
-        manipulation, toxicity,
-        credibility: null,
-        postText: truncate(text, 120),
-        onProceed: () => { btn.dataset.gbProceed = '1'; btn.click(); },
-        onCancel:  () => {},
-      });
+      // Async work (settings check + full manipulation scan) runs after blocking
+      (async () => {
+        const settings = await getCachedSettings();
+        if (!settings.prePostReflection) {
+          // User has reflection off — let the post go through
+          btn.dataset.gbProceed = '1';
+          btn.click();
+          return;
+        }
+
+        const manipulation = await detectManipulation(text);
+
+        showReflectionModal({
+          manipulation, toxicity,
+          credibility: null,
+          postText: truncate(text, 120),
+          onProceed: () => { btn.dataset.gbProceed = '1'; btn.click(); },
+          onCancel:  () => {},
+        });
+      })();
     }, true); // capture phase
   }
 
