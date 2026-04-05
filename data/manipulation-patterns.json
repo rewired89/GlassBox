@@ -55,7 +55,14 @@
         "apocalypse",
         "existential threat",
         "civilization will fall",
-        "society will collapse"
+        "society will collapse",
+        "go back to your country",
+        "go back where you came from",
+        "go back to where",
+        "send them back",
+        "they don't belong here",
+        "get out of our country",
+        "this is our country"
       ],
       "regex_patterns": [
         "\\b(they|them|those people) (are|will|want to) (destroy|replace|eliminate|erase)\\b"
@@ -197,7 +204,11 @@
         "they breed like",
         "swarms of",
         "horde of",
-        "mob of"
+        "mob of",
+        "illegal aliens",
+        "these people are animals",
+        "not human",
+        "less than human"
       ],
       "regex_patterns": [
         "\\b(swarm|horde|infestation|plague|vermin|cockroach|parasite)s?\\b"

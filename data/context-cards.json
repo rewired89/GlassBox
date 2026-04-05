@@ -9,8 +9,12 @@
       "trigger_phrases": [
         "go back to your country",
         "go back where you came from",
+        "go back to where you came from",
+        "go back to where they came from",
+        "send them back",
         "real Americans",
         "true Americans",
+        "this is our country",
         "deport natives",
         "illegal natives",
         "native immigrants"
@@ -81,9 +85,20 @@
         "illegal immigrants commit more crime",
         "immigration causes crime",
         "deport them all",
+        "deport immigrants",
         "close the border",
         "immigrant invasion",
-        "they're taking our jobs"
+        "immigrants are invading",
+        "they're taking our jobs",
+        "taking our jobs",
+        "immigrants are dangerous",
+        "immigrants are animals",
+        "immigrants are vermin",
+        "immigrants don't belong",
+        "illegal aliens",
+        "stop immigration",
+        "immigrants are ruining",
+        "immigrants are destroying"
       ],
       "card": {
         "hook": "What does research say about immigration and crime?",

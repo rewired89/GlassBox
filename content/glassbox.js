@@ -280,8 +280,14 @@
 
   async function findMatchingCards(text) {
     const cards = await loadCards();
-    const norm = text.toLowerCase();
-    return cards.filter(c => (c.trigger_phrases || []).some(p => norm.includes(p.toLowerCase())));
+    const norm = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
+    return cards.filter(c => (c.trigger_phrases || []).some(p => {
+      // Exact substring match first
+      if (norm.includes(p.toLowerCase())) return true;
+      // Also match if all significant words in the phrase appear in the text
+      const words = p.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      return words.length >= 2 && words.every(w => norm.includes(w));
+    }));
   }
 
   function renderContextCard(cardDef) {
@@ -578,11 +584,28 @@
         row.appendChild(createCredibilityBadge(primaryCred));
       }
 
-      if (settings.showManipulationIndicators && manipulation?.is_manipulative) {
-        const levels = { low: ['low','medium','high'], medium: ['medium','high'], high: ['high'] };
-        if ((levels[settings.manipulationThreshold] || levels.medium).includes(manipulation.level)) {
-          row.appendChild(createManipulationIndicator(manipulation));
+      if (settings.showManipulationIndicators) {
+        let indicatorResult = null;
+
+        if (manipulation?.is_manipulative) {
+          const levels = { low: ['low','medium','high'], medium: ['medium','high'], high: ['high'] };
+          if ((levels[settings.manipulationThreshold] || levels.medium).includes(manipulation.level)) {
+            indicatorResult = manipulation;
+          }
+        } else if (toxicity?.toxic || toxicity?.sensitive) {
+          // Toxicity detected but no manipulation pattern matched — still show a tag
+          indicatorResult = {
+            level: toxicity.toxic ? 'high' : 'medium',
+            tactics: [{
+              tactic: 'dehumanization',
+              label: toxicity.toxic ? 'Harmful Language' : 'Sensitive Language',
+              icon: toxicity.toxic ? '🚫' : '⚠️',
+              description: 'Language that may be harmful or demean groups of people',
+            }],
+          };
         }
+
+        if (indicatorResult) row.appendChild(createManipulationIndicator(indicatorResult));
       }
 
       if (row.children.length) actionBar.appendChild(row);
@@ -596,12 +619,13 @@
       if (count > 0) textEl.parentElement?.insertBefore(cardContainer, textEl.nextSibling);
     }
 
-    // Record view
+    // Record view — count toxicity-based flags too
+    const isManipulativeOrToxic = manipulation?.is_manipulative || toxicity?.toxic || toxicity?.sensitive || false;
     recordPostView({
       platform: 'twitter',
       source_domain: primaryCred?.domain || null,
       credibility_score: primaryCred?.score || null,
-      manipulation_detected: manipulation?.is_manipulative || false,
+      manipulation_detected: isManipulativeOrToxic,
       tactics_used: manipulation?.tactics?.map(t => t.tactic) || [],
       user_engaged: false,
       engagement_type: 'view',
