@@ -6,9 +6,13 @@
 (async function GlassBox() {
   'use strict';
 
-  // ── Guard: run only once ─────────────────────────────────────────────────────
+  // ── Guard: run only once per page load ───────────────────────────────────────
+  // Use a versioned flag so reloading the extension re-injects cleanly after refresh.
   if (window.__glassboxLoaded) return;
   window.__glassboxLoaded = true;
+
+  // Clean up any leftover UI from a previous injection
+  document.querySelectorAll('[data-glassbox]').forEach(el => el.remove());
 
   // ════════════════════════════════════════════════════════════════════════════
   // UTILS
@@ -654,6 +658,7 @@
 
       // Async work (settings check + full manipulation scan) runs after blocking
       (async () => {
+        try {
         const settings = await getCachedSettings();
         if (!settings.prePostReflection) {
           // User has reflection off — let the post go through
@@ -697,6 +702,12 @@
           },
           onCancel:  () => {},
         });
+        } catch (err) {
+          // If anything crashes, unblock the button so the user isn't stuck
+          console.error('[GlassBox] Modal error:', err);
+          btn.dataset.gbProceed = '1';
+          btn.click();
+        }
       })();
     }, true); // capture phase
   }

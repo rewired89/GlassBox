@@ -1,13 +1,61 @@
 /**
  * GlassBox Dashboard + Settings
- * Reads post view data directly from chrome.storage.local —
- * the same store the content script writes to.
+ * Self-contained — no external imports.
+ * Reads from chrome.storage.local (same key the content script writes to).
  */
 
-import { getSettings, saveSettings } from '../lib/storage.js';
-import { getTacticLabel, getTacticIcon } from '../lib/utils.js';
-
 const STORAGE_KEY = 'gb_post_views';
+
+const DEFAULT_SETTINGS = {
+  enabled: true,
+  showCredibilityBadges: true,
+  showManipulationIndicators: true,
+  showContextCards: true,
+  prePostReflection: true,
+  manipulationThreshold: 'medium',
+  credibilityMinScore: 4,
+};
+
+const TACTIC_LABELS = {
+  emotional_appeal: 'Emotional Appeal',
+  fear_mongering: 'Fear-Mongering',
+  false_dichotomy: 'False Dichotomy',
+  ad_hominem: 'Ad Hominem',
+  appeal_to_authority: 'Questionable Authority',
+  bandwagon: 'Bandwagon',
+  slippery_slope: 'Slippery Slope',
+  dehumanization: 'Dehumanizing Language',
+  cherry_picking: 'Cherry-Picked Data',
+  missing_context: 'Missing Context',
+  conspiracy: 'Conspiracy Framing',
+};
+const TACTIC_ICONS = {
+  emotional_appeal: '😡', fear_mongering: '😨', false_dichotomy: '⚖️',
+  ad_hominem: '🎯', appeal_to_authority: '🎓', bandwagon: '🐑',
+  slippery_slope: '🎿', dehumanization: '🚫', cherry_picking: '🍒',
+  missing_context: '📋', conspiracy: '🕵️',
+};
+function getTacticLabel(k) { return TACTIC_LABELS[k] || k; }
+function getTacticIcon(k)  { return TACTIC_ICONS[k]  || '⚠️'; }
+
+// ─── Settings ──────────────────────────────────────────────────────────────────
+
+function getSettings() {
+  return new Promise(resolve => {
+    chrome.storage.sync.get('glassbox_settings', r =>
+      resolve({ ...DEFAULT_SETTINGS, ...(r.glassbox_settings || {}) })
+    );
+  });
+}
+
+function saveSettings(patch) {
+  return getSettings().then(current => {
+    const merged = { ...current, ...patch };
+    return new Promise(resolve =>
+      chrome.storage.sync.set({ glassbox_settings: merged }, () => resolve(merged))
+    );
+  });
+}
 
 // ─── Stats computation ─────────────────────────────────────────────────────────
 
@@ -19,6 +67,7 @@ async function getStats(days) {
   const total        = views.length;
   const manipulative = views.filter(v => v.manipulation_detected).length;
   const shared       = views.filter(v => v.engagement_type === 'share').length;
+  const flagged      = views.filter(v => v.engagement_type === 'attempted_post').length;
 
   const scored   = views.filter(v => v.credibility_score != null);
   const highCred = scored.filter(v => v.credibility_score >= 7).length;
@@ -35,14 +84,12 @@ async function getStats(days) {
     .slice(0, 5)
     .map(([tactic, count]) => ({ tactic, count }));
 
-  return {
-    total, manipulative, shared,
+  return { total, manipulative, shared, flagged, topTactics,
     credibility: {
       highPct: scored.length ? Math.round(highCred / scored.length * 100) : 0,
       midPct:  scored.length ? Math.round(midCred  / scored.length * 100) : 0,
       lowPct:  scored.length ? Math.round(lowCred  / scored.length * 100) : 0,
     },
-    topTactics,
   };
 }
 
@@ -88,8 +135,8 @@ async function loadDashboard(days = 30) {
         <div class="empty-state__icon">📊</div>
         <div class="empty-state__title">No data yet</div>
         <div class="empty-state__text">
-          Browse Twitter/X and GlassBox will start tracking<br>
-          your information patterns here automatically.
+          Browse Twitter/X with GlassBox active and<br>
+          your stats will appear here automatically.
         </div>
       </div>`;
     return;
@@ -118,12 +165,12 @@ async function loadDashboard(days = 30) {
         <div class="stat-card__label">Posts Seen</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card__value" style="color:#ef4444">${stats.manipulative}</div>
+        <div class="stat-card__value" style="color:#ef4444">${stats.flagged}</div>
         <div class="stat-card__label">Flagged</div>
       </div>
       <div class="stat-card">
         <div class="stat-card__value" style="color:#f59e0b">${stats.shared}</div>
-        <div class="stat-card__label">Shared</div>
+        <div class="stat-card__label">Posted Anyway</div>
       </div>
     </div>
 
