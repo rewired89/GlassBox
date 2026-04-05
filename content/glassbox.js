@@ -461,7 +461,7 @@
     document.querySelector('[data-glassbox="modal-overlay"]')?.remove();
   }
 
-  function showReflectionModal({ manipulation, toxicity, credibility, postText, onProceed, onCancel }) {
+  function showReflectionModal({ manipulation, toxicity, credibility, postText, contextCards, onProceed, onCancel }) {
     removeModal();
 
     const hasToxic       = toxicity?.toxic;
@@ -507,7 +507,7 @@
       <div class="gb-modal__subline">${subline}</div>
       ${postText ? `<div style="font-size:12px;color:#6b7280;background:#0f1117;border-radius:8px;padding:8px 10px;margin-bottom:14px;border-left:3px solid #374151;font-style:italic">"${postText}"</div>` : ''}
       ${findingsHTML}
-      <div id="gb-modal-cards-slot"></div>
+      <div id="gb-modal-cards-slot" style="margin-bottom:4px"></div>
       <div class="gb-modal__actions">
         <button class="gb-modal__btn gb-modal__btn--secondary" data-action="cancel">Cancel</button>
         <button class="gb-modal__btn gb-modal__btn--proceed"   data-action="proceed">Post anyway</button>
@@ -517,14 +517,10 @@
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Inject context cards into modal
-    if (postText) {
-      findMatchingCards(postText).then(matches => {
-        const slot = modal.querySelector('#gb-modal-cards-slot');
-        if (slot && matches.length) {
-          matches.slice(0, 1).forEach(c => slot.appendChild(renderContextCard(c)));
-        }
-      });
+    // Inject context cards — cards were pre-fetched with the full text
+    if (contextCards?.length) {
+      const slot = modal.querySelector('#gb-modal-cards-slot');
+      if (slot) contextCards.slice(0, 1).forEach(c => slot.appendChild(renderContextCard(c)));
     }
 
     overlay.addEventListener('click', e => {
@@ -691,7 +687,10 @@
           return;
         }
 
-        const manipulation = await detectManipulation(text);
+        const [manipulation, contextCards] = await Promise.all([
+          detectManipulation(text),
+          findMatchingCards(text),
+        ]);
 
         // Record that a post attempt was intercepted
         recordPostView({
@@ -709,6 +708,7 @@
           manipulation, toxicity,
           credibility: null,
           postText: truncate(text, 120),
+          contextCards,
           onProceed: () => {
             // Update: user decided to post anyway
             recordPostView({
