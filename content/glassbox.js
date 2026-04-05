@@ -518,6 +518,7 @@
     }
 
     overlay.addEventListener('click', e => {
+      e.stopPropagation(); // prevent clicks inside modal from reaching Twitter's global handlers
       const action = e.target.closest('[data-action]')?.dataset.action;
       if (action === 'proceed') { removeModal(); onProceed?.(); }
       else if (action === 'cancel' || e.target === overlay) { removeModal(); onCancel?.(); }
@@ -634,7 +635,9 @@
     // NOTE: handler must be synchronous so e.preventDefault() fires BEFORE
     // the event propagates to Twitter's own listeners. Any async work happens
     // AFTER we've already blocked the event.
-    btn.addEventListener('click', e => {
+    // Use pointerdown — fires before mousedown/click, so we block before
+    // Twitter can initiate the submit action on its own listeners.
+    btn.addEventListener('pointerdown', e => {
       if (btn.dataset.gbProceed) return;
 
       const composeEl = document.querySelector(SEL.composeArea);
