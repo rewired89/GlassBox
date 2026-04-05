@@ -664,11 +664,37 @@
 
         const manipulation = await detectManipulation(text);
 
+        // Record that a post attempt was intercepted
+        recordPostView({
+          platform: 'twitter',
+          source_domain: null,
+          credibility_score: null,
+          manipulation_detected: manipulation?.is_manipulative || toxicity.toxic || toxicity.sensitive,
+          tactics_used: manipulation?.tactics?.map(t => t.tactic) || [],
+          user_engaged: false,
+          engagement_type: 'attempted_post',
+          post_text_hash: hashString(text.slice(0, 100)),
+        });
+
         showReflectionModal({
           manipulation, toxicity,
           credibility: null,
           postText: truncate(text, 120),
-          onProceed: () => { btn.dataset.gbProceed = '1'; btn.click(); },
+          onProceed: () => {
+            // Update: user decided to post anyway
+            recordPostView({
+              platform: 'twitter',
+              source_domain: null,
+              credibility_score: null,
+              manipulation_detected: manipulation?.is_manipulative || toxicity.toxic || toxicity.sensitive,
+              tactics_used: manipulation?.tactics?.map(t => t.tactic) || [],
+              user_engaged: true,
+              engagement_type: 'share',
+              post_text_hash: hashString(text.slice(0, 100)),
+            });
+            btn.dataset.gbProceed = '1';
+            btn.click();
+          },
           onCancel:  () => {},
         });
       })();
