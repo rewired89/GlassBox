@@ -6,12 +6,11 @@
 (async function GlassBox() {
   'use strict';
 
-  // ── Guard: run only once per page load ───────────────────────────────────────
-  // Use a versioned flag so reloading the extension re-injects cleanly after refresh.
-  if (window.__glassboxLoaded) return;
-  window.__glassboxLoaded = true;
-
-  // Clean up any leftover UI from a previous injection
+  // ── Re-injection safe: clean up any previous instance, then run fresh ─────────
+  // When the extension reloads while a tab is open, Chrome re-injects this script.
+  // Instead of blocking with a guard (which keeps old broken code running), we
+  // always clean up previous UI and re-run. processedPosts is a new WeakSet each
+  // time so all tweets get re-annotated cleanly.
   document.querySelectorAll('[data-glassbox]').forEach(el => el.remove());
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -239,10 +238,14 @@
 
   function getBadgeFromBackground(domain) {
     return new Promise(resolve => {
-      chrome.runtime.sendMessage({ type: 'GET_BADGE', payload: { domain } }, response => {
-        if (chrome.runtime.lastError) { resolve(null); return; }
-        resolve(response || null);
-      });
+      const timer = setTimeout(() => resolve(null), 2000);
+      try {
+        chrome.runtime.sendMessage({ type: 'GET_BADGE', payload: { domain } }, response => {
+          clearTimeout(timer);
+          if (chrome.runtime.lastError) { resolve(null); return; }
+          resolve(response || null);
+        });
+      } catch { clearTimeout(timer); resolve(null); }
     });
   }
 
@@ -647,7 +650,11 @@
   function getActionBar(tweetEl){ return tweetEl.querySelector(SEL.actionBar); }
 
   async function processTweet(tweetEl) {
-    await annotatePost(tweetEl, { getTextEl, getActionBar });
+    try {
+      await annotatePost(tweetEl, { getTextEl, getActionBar });
+    } catch (err) {
+      console.warn('[GlassBox] annotatePost error:', err);
+    }
   }
 
   // ── Compose box intercept ──────────────────────────────────────────────────
