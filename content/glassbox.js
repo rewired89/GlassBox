@@ -6,11 +6,14 @@
 (async function GlassBox() {
   'use strict';
 
-  // ── Re-injection safe: clean up any previous instance, then run fresh ─────────
-  // When the extension reloads while a tab is open, Chrome re-injects this script.
-  // Instead of blocking with a guard (which keeps old broken code running), we
-  // always clean up previous UI and re-run. processedPosts is a new WeakSet each
-  // time so all tweets get re-annotated cleanly.
+  // ── Teardown previous instance, then run fresh ────────────────────────────────
+  // On extension reload Chrome re-injects into open tabs. Calling the previous
+  // instance's teardown disconnects its observers and resets button hooks so the
+  // new code fully takes over — no stale handlers, no duplicate observers.
+  if (typeof window.__glassboxTeardown === 'function') {
+    window.__glassboxTeardown();
+    await new Promise(r => setTimeout(r, 30)); // let teardown settle
+  }
   document.querySelectorAll('[data-glassbox]').forEach(el => el.remove());
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -195,9 +198,11 @@
   // ════════════════════════════════════════════════════════════════════════════
 
   const TOXIC_PATTERNS = [
-    // "animals/vermin/etc." only toxic when applied to people, not actual animals
-    /\b(they|those|these|immigrants?|refugees?|you people|people like (them|you))\b.{0,40}\b(animals?|vermin|cockroaches?|parasites?|plague|infestation)\b/i,
-    /\b(animals?|vermin|cockroaches?|parasites?)\b.{0,20}\b(immigrants?|refugees?|they|those people|these people)\b/i,
+    // Dehumanizing slurs — almost always used to describe people, not literal creatures
+    /\b(vermin|cockroaches?|parasites?|subhuman)\b/i,
+    // "animals" is a common word, only flag when directed at a human group
+    /\b(they|those|these|immigrants?|refugees?|you people).{0,40}\banimals?\b/i,
+    /\banimals?\b.{0,20}\b(immigrants?|refugees?|those people|these people)\b/i,
     /\b(should (be|get) (killed|shot|hanged|executed|eliminated))\b/i,
     /\b(kill (all|every|those))\b/i,
     /\b(go (kill|hang|shoot) yourself)\b/i,
@@ -745,6 +750,7 @@
     }, true); // capture phase
   }
 
+  let _composeObserver = null;
   function watchComposeBox() {
     const check = () => {
       SEL.submitBtns.forEach(sel =>
@@ -752,11 +758,13 @@
       );
     };
     check();
-    new MutationObserver(check).observe(document.body, { childList: true, subtree: true });
+    _composeObserver = new MutationObserver(check);
+    _composeObserver.observe(document.body, { childList: true, subtree: true });
   }
 
   // ── Feed observer ──────────────────────────────────────────────────────────
 
+  let _feedObserver = null;
   function watchFeed() {
     const debouncedScan = debounce(() => {
       document.querySelectorAll(SEL.tweet).forEach(el => {
@@ -764,7 +772,7 @@
       });
     }, 300);
 
-    new MutationObserver(mutations => {
+    _feedObserver = new MutationObserver(mutations => {
       let found = false;
       for (const m of mutations) {
         for (const node of m.addedNodes) {
@@ -774,7 +782,8 @@
         }
       }
       if (!found) debouncedScan();
-    }).observe(document.body, { childList: true, subtree: true });
+    });
+    _feedObserver.observe(document.body, { childList: true, subtree: true });
   }
 
   // ── Bootstrap ──────────────────────────────────────────────────────────────
@@ -788,6 +797,16 @@
 
     watchFeed();
     watchComposeBox();
+
+    // Register teardown so the NEXT injection can cleanly replace this one
+    window.__glassboxTeardown = () => {
+      _feedObserver?.disconnect();
+      _composeObserver?.disconnect();
+      document.querySelectorAll('[data-glassbox]').forEach(el => el.remove());
+      document.querySelectorAll('[data-gb-hooked]').forEach(el => el.removeAttribute('data-gb-hooked'));
+      document.querySelectorAll('[data-gb-proceed]').forEach(el => el.removeAttribute('data-gb-proceed'));
+      delete window.__glassboxTeardown;
+    };
 
     console.info('[GlassBox] Twitter injector active. ✓');
   }
