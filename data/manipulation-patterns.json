@@ -194,21 +194,20 @@
         "vermin",
         "cockroaches",
         "parasites",
-        "animals",
         "subhuman",
-        "infestation",
         "infestation of",
-        "plague",
-        "disease",
-        "inhumane creatures",
         "they breed like",
         "swarms of",
         "horde of",
         "mob of",
         "illegal aliens",
+        "are animals",
+        "like animals",
         "these people are animals",
+        "they are animals",
         "not human",
-        "less than human"
+        "less than human",
+        "inhuman creatures"
       ],
       "regex_patterns": [
         "\\b(swarm|horde|infestation|plague|vermin|cockroach|parasite)s?\\b"

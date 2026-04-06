@@ -195,7 +195,9 @@
   // ════════════════════════════════════════════════════════════════════════════
 
   const TOXIC_PATTERNS = [
-    /\b(animals?|vermin|cockroach|parasite|plague|infestation)\b/i,
+    // "animals/vermin/etc." only toxic when applied to people, not actual animals
+    /\b(they|those|these|immigrants?|refugees?|you people|people like (them|you))\b.{0,40}\b(animals?|vermin|cockroaches?|parasites?|plague|infestation)\b/i,
+    /\b(animals?|vermin|cockroaches?|parasites?)\b.{0,20}\b(immigrants?|refugees?|they|those people|these people)\b/i,
     /\b(should (be|get) (killed|shot|hanged|executed|eliminated))\b/i,
     /\b(kill (all|every|those))\b/i,
     /\b(go (kill|hang|shoot) yourself)\b/i,
