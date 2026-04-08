@@ -235,6 +235,34 @@
       ]
     },
     {
+      "id": "harmful_language_impact",
+      "is_fallback": true,
+      "trigger_phrases": [],
+      "card": {
+        "hook": "Words have more impact than we expect",
+        "title": "How Online Language Affects Real People",
+        "timeline": [
+          { "date": "Research", "event": "Studies show that exposure to dehumanizing language online correlates with increased real-world discrimination and violence." },
+          { "date": "2017", "event": "UN report: hate speech on social media directly contributed to violence against Rohingya people in Myanmar." },
+          { "date": "2018", "event": "Facebook's internal research found that inflammatory content drove higher engagement — and also more real-world conflict." },
+          { "date": "2021", "event": "MIT study: false and inflammatory content spreads 6x faster on social media than accurate, measured information." },
+          { "date": "Today", "event": "The words we post can reach millions in seconds — including people who belong to the groups being discussed." }
+        ],
+        "irony_highlight": "Content meant to express frustration often lands hardest on people who had no role in causing that frustration.",
+        "empathy_angle": "Behind every post is a real audience. Some of them are directly affected by the way groups they belong to are talked about.",
+        "sources": [
+          "UN Report on Hate Speech and Human Rights (2019)",
+          "Pew Research Center: Online Harassment (2021)",
+          "MIT Media Lab: Language and Bias Research",
+          "Facebook Transparency Report: Content Moderation"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Try expressing the specific concern without targeting a group of people",
+        "Ask: what outcome do you actually want from this post?"
+      ]
+    },
+    {
       "id": "systemic_racism",
       "trigger_phrases": [
         "systemic racism doesn't exist",

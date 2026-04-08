@@ -218,12 +218,29 @@
     /\bthey (are|'re) (all|just|only)\b/i,
   ];
 
+  // Named animals — when text is specifically about a real animal (not using "animals"
+  // as a slur against a human group), dehumanization patterns don't apply.
+  const NAMED_ANIMALS_RE = /\b(monkey|elephant|dog|cat|bear|lion|tiger|gorilla|chimpanzee|chimp|bird|snake|fox|wolf|deer|horse|cow|pig|rat|mouse|fish|shark|whale|dolphin|parrot|rabbit|squirrel|raccoon|alligator|crocodile|kangaroo|koala|panda|penguin|crow|pigeon|owl|eagle|hawk|giraffe|zebra|hippo|rhino|cheetah|leopard|jaguar|moose|bison|buffalo|donkey|sheep|goat|chicken|duck|goose|turkey|hamster|otter|seal|llama|camel|sloth|iguana|lizard|turtle|frog|toad|bee|spider|crab|lobster|octopus|jellyfish|flamingo|peacock)\b/i;
+  const HUMAN_GROUP_TARGETS_RE = /\b(immigrant|refugee|liberal|conservative|democrat|republican|muslim|jew|christian|black people|white people|latino|hispanic|asian|those people|these people|you people|people like (them|us|you))\b/i;
+
   function analyzeToxicity(text) {
     if (!text || text.length < 5) return { toxic: false, score: 0, sensitive: false, flags: [] };
+
+    // If the text is about a named animal and doesn't target a human group, clear the flag
+    const hasNamedAnimal   = NAMED_ANIMALS_RE.test(text);
+    const hasHumanTarget   = HUMAN_GROUP_TARGETS_RE.test(text);
+    const animalOnlyContext = hasNamedAnimal && !hasHumanTarget;
+
     const flags = [];
     let toxicHits = 0, sensitiveHits = 0;
 
-    TOXIC_PATTERNS.forEach(p     => { if (p.test(text)) { toxicHits++;     flags.push('toxicity_pattern');   } });
+    TOXIC_PATTERNS.forEach(p => {
+      if (!p.test(text)) return;
+      // Skip "animals" patterns when text is clearly about a real animal, not a slur
+      if (animalOnlyContext && p.source.includes('animals?')) return;
+      toxicHits++;
+      flags.push('toxicity_pattern');
+    });
     SENSITIVE_PATTERNS.forEach(p => { if (p.test(text)) { sensitiveHits++; flags.push('sensitive_language'); } });
 
     const words = text.split(/\s+/);
@@ -291,13 +308,49 @@
   async function findMatchingCards(text) {
     const cards = await loadCards();
     const norm = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
-    return cards.filter(c => (c.trigger_phrases || []).some(p => {
+    return cards.filter(c => !c.is_fallback && (c.trigger_phrases || []).some(p => {
       // Exact substring match first
       if (norm.includes(p.toLowerCase())) return true;
       // Also match if all significant words in the phrase appear in the text
       const words = p.toLowerCase().split(/\s+/).filter(w => w.length > 3);
       return words.length >= 2 && words.every(w => norm.includes(w));
     }));
+  }
+
+  // findBestCard — guaranteed to return a card when content is flagged:
+  // 1. Try trigger phrase match  2. Try topic keyword match  3. Return generic fallback
+  async function findBestCard(text) {
+    const cards = await loadCards();
+    const norm = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
+
+    // 1. Trigger phrase match
+    const byPhrase = cards.filter(c => !c.is_fallback && (c.trigger_phrases || []).some(p => {
+      if (norm.includes(p.toLowerCase())) return true;
+      const words = p.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      return words.length >= 2 && words.every(w => norm.includes(w));
+    }));
+    if (byPhrase.length) return [byPhrase[0]];
+
+    // 2. Topic keyword matching
+    const TOPIC_KEYWORDS = [
+      { id: 'immigration_history',         keys: ['immigrant', 'immigration', 'border', 'deport', 'migrant', 'undocumented', 'illegal alien'] },
+      { id: 'native_american_indigeneity', keys: ['native american', 'indigenous', 'tribe', 'real american', 'our country', 'belong here'] },
+      { id: 'climate_change_consensus',    keys: ['climate', 'global warming', 'carbon', 'greenhouse', 'emissions'] },
+      { id: 'vaccine_safety',              keys: ['vaccine', 'vaccin', 'immuniz', 'autism', 'anti-vax', 'vax'] },
+      { id: 'election_integrity',          keys: ['election', 'vote', 'ballot', 'stolen', 'fraud', 'dominion'] },
+      { id: 'lgbtq_history',               keys: ['gay', 'lesbian', 'trans', 'lgbt', 'queer', 'gender', 'groomer'] },
+      { id: 'systemic_racism',             keys: ['racist', 'racism', 'racial', 'black lives', 'white suprema', 'race card'] },
+    ];
+    for (const { id, keys } of TOPIC_KEYWORDS) {
+      if (keys.some(k => norm.includes(k))) {
+        const card = cards.find(c => c.id === id);
+        if (card) return [card];
+      }
+    }
+
+    // 3. Generic fallback — always shown when content is flagged but no specific card matches
+    const fallback = cards.find(c => c.is_fallback);
+    return fallback ? [fallback] : [];
   }
 
   function renderContextCard(cardDef) {
@@ -617,12 +670,16 @@
       if (row.children.length) actionBar.appendChild(row);
     }
 
-    // Context cards
+    // Context cards — always show for flagged content; show by topic match for clean content
     if (settings.showContextCards && textEl) {
-      const cardContainer = document.createElement('div');
-      cardContainer.setAttribute('data-glassbox', 'card-container');
-      const count = await injectContextCards(text, cardContainer);
-      if (count > 0) textEl.parentElement?.insertBefore(cardContainer, textEl.nextSibling);
+      const isFlag = manipulation?.is_manipulative || toxicity?.toxic || toxicity?.sensitive;
+      const cardsToShow = isFlag ? await findBestCard(text) : await findMatchingCards(text);
+      if (cardsToShow.length) {
+        const cardContainer = document.createElement('div');
+        cardContainer.setAttribute('data-glassbox', 'card-container');
+        cardsToShow.slice(0, 1).forEach(c => cardContainer.appendChild(renderContextCard(c)));
+        textEl.parentElement?.insertBefore(cardContainer, textEl.nextSibling);
+      }
     }
 
     // Record view — count toxicity-based flags too
@@ -703,7 +760,7 @@
 
         const [manipulation, contextCards] = await Promise.all([
           detectManipulation(text),
-          findMatchingCards(text),
+          findBestCard(text),
         ]);
 
         // Record that a post attempt was intercepted
