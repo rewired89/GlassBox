@@ -1,0 +1,58 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "updated": "2026-04-09",
+    "note": "All entries must be sourced from verified public records: court filings, official government reports, Elections Canada / FEC / OpenSecrets, or peer-reviewed journalism. No claims without a public source_url. This is Phase 1 (static). Phase 2 will use Perplexity Sonar API for real-time retrieval.",
+    "schema_version": "accountability_v1"
+  },
+  "figures": [
+    {
+      "_comment": "SCHEMA EXAMPLE — Remove this entry and replace with real verified figures.",
+      "id": "example_figure",
+      "name": "Example Public Figure",
+      "handles": ["example_handle"],
+      "role": "Member of Parliament / Senator / Official",
+      "jurisdiction": "CA",
+      "topics": ["mmiwg", "indigenous_rights", "resource_extraction"],
+      "legal_proceedings": [
+        {
+          "case": "Example v. Example (2020)",
+          "type": "civil",
+          "status": "settled",
+          "date": "2020-06-15",
+          "summary": "Brief factual summary of the case from public court records.",
+          "source": "Court registry / public filing",
+          "source_url": "https://example-court-registry.ca/case/12345"
+        }
+      ],
+      "fact_check_discrepancies": [
+        {
+          "claim": "Exact quote or paraphrase of the documented public claim",
+          "finding": "What verified public records actually show, with specific data",
+          "source": "Name of official report or record",
+          "source_url": "https://official-source.gov/report"
+        }
+      ],
+      "financial_ties": [
+        {
+          "entity": "Company / Lobby Group / PAC Name",
+          "relationship": "Donor / Board member / Contract recipient",
+          "amount": "$0,000 (YYYY–YYYY)",
+          "relevance": "How this creates a conflict of interest with their stated position on this topic",
+          "source": "Elections Canada / OpenSecrets / Public corporate registry",
+          "source_url": "https://elections.ca/search"
+        }
+      ]
+    }
+  ],
+
+  "_rag_config": {
+    "note": "Phase 2 RAG integration. When a figure is NOT in the static database, GlassBox will query the Perplexity Sonar API to retrieve real-time verified public records.",
+    "api_endpoint": "https://api.perplexity.ai/chat/completions",
+    "model": "llama-3.1-sonar-large-128k-online",
+    "system_prompt": "You are a public records researcher. When given a public figure's name and Twitter handle, retrieve ONLY verified, sourced information about: (1) any legal proceedings they have faced, (2) documented contradictions between their public statements and official reports, (3) financial ties to the topics they post about. Return structured JSON. Cite only official court records, government filings, and major news outlets. Do not speculate.",
+    "return_citations": true,
+    "search_recency_filter": "year",
+    "requires_api_key_in_settings": true
+  }
+}

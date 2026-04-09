@@ -257,6 +257,116 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  // PSYCHOLINGUISTIC ENGINE  — Sympathetic Resonance & Toxic Affect
+  //
+  // Sympathetic Resonance (0–100): how much the text uses empathy, inclusivity,
+  // constructive framing, and humanizing language.
+  //
+  // Toxic Affect (0–100): how much the text carries aggression, dehumanization,
+  // absolutism, and attack-oriented language.
+  //
+  // Both scores are computed synchronously from word-list and pattern matching,
+  // modeled on LIWC (Linguistic Inquiry and Word Count) psycholinguistic research.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  const EMPATHY_MARKERS = [
+    'understand', 'imagine', 'feel', 'feelings', 'together', 'community',
+    'support', 'compassion', 'care', 'listen', 'respect', 'acknowledge',
+    'grief', 'heal', 'justice', 'rights', 'dignity', 'humanity', 'empathy',
+    'solidarity', 'concern', 'protect', 'voice', 'story', 'family',
+    'children', 'mothers', 'sisters', 'survivors', 'loved ones', 'wellbeing',
+  ];
+
+  const CONSTRUCTIVE_VERBS = [
+    'build', 'improve', 'solve', 'address', 'advocate', 'reform', 'invest',
+    'create', 'develop', 'strengthen', 'collaborate', 'commit', 'pursue',
+    'achieve', 'restore', 'reconcile', 'honour', 'recognize', 'empower',
+  ];
+
+  const ATTACK_MARKERS = [
+    'idiot', 'stupid', 'moron', 'pathetic', 'disgusting', 'loser', 'clown',
+    'trash', 'garbage', 'filth', 'scum', 'coward', 'liar', 'fraud',
+    'useless', 'incompetent', 'corrupt', 'hypocrisy', 'hypocrite',
+  ];
+
+  const ABSOLUTIST_RE = [
+    /\ball (of )?them\b/i,
+    /\bevery single (one|person|immigrant|liberal|conservative)\b/i,
+    /\bnone of them\b/i,
+    /\b(always|never) (care|listen|help|tell the truth|work)\b/i,
+    /\ball (liberals?|conservatives?|immigrants?|muslims?|jews?|christians?)\b/i,
+  ];
+
+  function computeResonanceScore(text, precomputedToxicity) {
+    if (!text || text.length < 10) return { resonance: 50, affect: 0, label: 'Neutral', color: '#9ca3af' };
+    const norm    = text.toLowerCase();
+    const words   = norm.split(/\s+/);
+    const wCount  = Math.max(words.length, 1);
+
+    let resonance = 50;
+    let affect    = 0;
+
+    // ── Positive resonance signals ──────────────────────────────────────────
+    const empathyHits     = EMPATHY_MARKERS.filter(m => norm.includes(m)).length;
+    const constructHits   = CONSTRUCTIVE_VERBS.filter(v => norm.includes(v)).length;
+    resonance += Math.min(empathyHits * 4, 20);
+    resonance += Math.min(constructHits * 3, 12);
+
+    // Hedged opinion ("I think", "I believe") — non-assertive, lower threat
+    if (/\bi (think|believe|feel|wonder|hope)\b/.test(norm)) resonance += 5;
+
+    // Inclusive "we" framing
+    if (/\b(our community|together|we can|let'?s|collective)\b/.test(norm)) resonance += 6;
+
+    // Single genuine question (curiosity, not rhetorical gotcha)
+    if (/\?/.test(text) && (text.match(/\?/g) || []).length === 1) resonance += 3;
+
+    // ── Negative resonance / positive affect signals ─────────────────────────
+    const attackHits      = ATTACK_MARKERS.filter(w => norm.includes(w)).length;
+    const absolutistHits  = ABSOLUTIST_RE.filter(r => r.test(norm)).length;
+    resonance -= Math.min(attackHits * 6, 25);
+    resonance -= absolutistHits * 5;
+    affect    += Math.min(attackHits * 8, 30);
+    affect    += absolutistHits * 8;
+
+    // Toxicity (use pre-computed result if available to avoid double-run)
+    const tox = precomputedToxicity || analyzeToxicity(text);
+    if (tox.toxic)     { resonance -= 30; affect += 40; }
+    else if (tox.sensitive) { resonance -= 10; affect += 15; }
+
+    // Excessive caps
+    const capsRatio = words.filter(w => w.length > 3 && w.toUpperCase() === w && /[A-Z]/.test(w)).length / wCount;
+    if (capsRatio > 0.2) { resonance -= 10; affect += 10; }
+
+    // Excessive punctuation
+    if ((text.match(/!/g) || []).length > 2) { resonance -= 5; affect += 5; }
+
+    // ── Clamp & label ────────────────────────────────────────────────────────
+    resonance = Math.max(0, Math.min(100, Math.round(resonance)));
+    affect    = Math.max(0, Math.min(100, Math.round(affect)));
+
+    let label, color;
+    if      (resonance >= 70) { label = 'Empathetic';  color = '#22c55e'; }
+    else if (resonance >= 50) { label = 'Neutral';     color = '#9ca3af'; }
+    else if (resonance >= 30) { label = 'Dismissive';  color = '#f59e0b'; }
+    else                      { label = 'Hostile';     color = '#ef4444'; }
+
+    return { resonance, affect, label, color };
+  }
+
+  function createResonanceIndicator(score) {
+    const btn = document.createElement('button');
+    btn.setAttribute('data-glassbox', 'resonance-indicator');
+    btn.className = 'gb-resonance';
+    btn.style.cssText = `color:${score.color};border-color:${score.color}33;background:${score.color}11`;
+    btn.title = `Sympathetic Resonance: ${score.resonance}%  |  Toxic Affect: ${score.affect}%`;
+    btn.textContent = `${score.resonance < 35 ? '💢' : '💭'} ${score.resonance}% resonance`;
+    // No popover for now — tooltip is sufficient
+    btn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
+    return btn;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // CREDIBILITY DETECTOR
   // ════════════════════════════════════════════════════════════════════════════
 
@@ -557,6 +667,110 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  // PUBLIC FIGURE ACCOUNTABILITY  — Accountability Cards for known public figures
+  //
+  // Schema: data/public-figures.json
+  // Each entry has: handles[], legal_proceedings[], fact_check_discrepancies[],
+  // financial_ties[].  All data must be sourced from verified public records.
+  //
+  // RAG note: The static JSON is Phase 1. Phase 2 will call the Perplexity
+  // Sonar API at trigger time to fetch real-time verified public records.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  let _publicFigureDB = null;
+
+  async function loadPublicFigures() {
+    if (_publicFigureDB) return _publicFigureDB;
+    try {
+      const url = chrome.runtime.getURL('data/public-figures.json');
+      const json = await fetch(url).then(r => r.json());
+      _publicFigureDB = json.figures || [];
+    } catch { _publicFigureDB = []; }
+    return _publicFigureDB;
+  }
+
+  // Extract Twitter/X author handle from a tweet article element
+  function getAuthorHandle(tweetEl) {
+    const nameEl = tweetEl.querySelector('[data-testid="User-Name"]');
+    if (!nameEl) return null;
+    const links = nameEl.querySelectorAll('a[role="link"][href^="/"]');
+    for (const link of links) {
+      const match = link.getAttribute('href')?.match(/^\/([A-Za-z0-9_]{1,50})(?:\/|$)/);
+      if (match && !['search','explore','notifications','messages','settings'].includes(match[1].toLowerCase())) {
+        return match[1].toLowerCase();
+      }
+    }
+    return null;
+  }
+
+  async function findPublicFigure(tweetEl) {
+    const handle = getAuthorHandle(tweetEl);
+    if (!handle) return null;
+    const figures = await loadPublicFigures();
+    return figures.find(f => (f.handles || []).some(h => h.replace(/^@/, '').toLowerCase() === handle)) || null;
+  }
+
+  function renderAccountabilityCard(figure) {
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'accountability-card');
+    el.className = 'gb-acct-card';
+
+    const legalHTML = (figure.legal_proceedings || []).slice(0, 3).map(p => `
+      <div class="gb-acct-card__item">
+        <span class="gb-acct-card__item-badge gb-acct-card__item-badge--${p.status}">${p.status}</span>
+        <div>
+          <div class="gb-acct-card__item-title">${p.case}</div>
+          <div class="gb-acct-card__item-detail">${p.summary}</div>
+          ${p.source_url ? `<a class="gb-acct-card__item-link" href="${p.source_url}" target="_blank" rel="noopener noreferrer">📄 ${p.source}</a>` : `<span class="gb-acct-card__item-src">${p.source}</span>`}
+        </div>
+      </div>`).join('');
+
+    const factHTML = (figure.fact_check_discrepancies || []).slice(0, 3).map(f => `
+      <div class="gb-acct-card__item">
+        <span class="gb-acct-card__item-badge gb-acct-card__item-badge--disputed">disputed</span>
+        <div>
+          <div class="gb-acct-card__item-title">"${f.claim}"</div>
+          <div class="gb-acct-card__item-detail">↳ ${f.finding}</div>
+          ${f.source_url ? `<a class="gb-acct-card__item-link" href="${f.source_url}" target="_blank" rel="noopener noreferrer">📄 ${f.source}</a>` : ''}
+        </div>
+      </div>`).join('');
+
+    const financeHTML = (figure.financial_ties || []).slice(0, 3).map(f => `
+      <div class="gb-acct-card__item">
+        <span class="gb-acct-card__item-badge gb-acct-card__item-badge--financial">financial</span>
+        <div>
+          <div class="gb-acct-card__item-title">${f.entity}</div>
+          <div class="gb-acct-card__item-detail">${f.relationship}${f.amount ? ` — ${f.amount}` : ''}</div>
+          <div class="gb-acct-card__item-detail" style="color:#6b7280">${f.relevance}</div>
+          ${f.source_url ? `<a class="gb-acct-card__item-link" href="${f.source_url}" target="_blank" rel="noopener noreferrer">📄 ${f.source}</a>` : ''}
+        </div>
+      </div>`).join('');
+
+    const sections = [
+      legalHTML   ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">⚖️ Verified Legal Proceedings</div>${legalHTML}</div>` : '',
+      factHTML    ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">🔎 Documented Contradictions</div>${factHTML}</div>` : '',
+      financeHTML ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">💰 Financial Ties to This Topic</div>${financeHTML}</div>` : '',
+    ].filter(Boolean).join('');
+
+    el.innerHTML = `
+      <button class="gb-acct-card__trigger" aria-expanded="false">
+        <span>🏛️</span>
+        <span class="gb-acct-card__trigger-label">Public Record — ${figure.name}</span>
+        <span class="gb-acct-card__trigger-role">${figure.role || ''}</span>
+        <span class="gb-acct-card__trigger-arrow">▼</span>
+      </button>
+      <div class="gb-acct-card__body">${sections || '<div style="color:#6b7280;font-size:12px;padding:10px">No verified records on file for this topic.</div>'}</div>`;
+
+    el.querySelector('.gb-acct-card__trigger').addEventListener('click', e => {
+      e.stopPropagation();
+      const expanded = el.classList.toggle('gb-acct-card--expanded');
+      el.querySelector('.gb-acct-card__trigger').setAttribute('aria-expanded', expanded);
+    });
+
+    return el;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // INDICATOR UI  (badges + popovers)
   // ════════════════════════════════════════════════════════════════════════════
 
@@ -819,6 +1033,12 @@
         if (indicatorResult) row.appendChild(createManipulationIndicator(indicatorResult));
       }
 
+      // Psycholinguistic score — show resonance indicator when low (< 35%) or high affect
+      const resonance = computeResonanceScore(text, toxicity);
+      if (resonance.resonance < 35 || resonance.affect > 55) {
+        row.appendChild(createResonanceIndicator(resonance));
+      }
+
       if (row.children.length) actionBar.appendChild(row);
     }
 
@@ -856,6 +1076,14 @@
       // Add the "Add Context" button to the annotation row
       const annotRow = postEl.querySelector('[data-glassbox="annotation-row"]');
       if (annotRow) annotRow.appendChild(createAddContextButton(postHash, textEl));
+    }
+
+    // Public figure accountability card
+    if (textEl) {
+      const figure = await findPublicFigure(postEl);
+      if (figure) {
+        textEl.parentElement?.insertBefore(renderAccountabilityCard(figure), textEl.nextSibling);
+      }
     }
 
     // Record view

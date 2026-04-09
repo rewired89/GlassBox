@@ -721,6 +721,158 @@
   text-decoration: underline;
 }
 
+/* ─── Resonance Indicator ─────────────────────────────────────────────────── */
+
+.gb-resonance {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: default;
+  border: 1px solid;
+  margin-left: 4px;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+/* ─── Accountability Card ─────────────────────────────────────────────────── */
+
+.gb-acct-card {
+  background: #16181c;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-left: 3px solid #a855f7;
+  border-radius: 0 10px 10px 0;
+  margin: 8px 0;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.gb-acct-card__trigger {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  cursor: pointer;
+  background: rgba(168, 85, 247, 0.06);
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: #a855f7;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.gb-acct-card__trigger:hover {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.gb-acct-card__trigger-label {
+  flex: 1;
+}
+
+.gb-acct-card__trigger-role {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.gb-acct-card__trigger-arrow {
+  color: #4b5563;
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+
+.gb-acct-card--expanded .gb-acct-card__trigger-arrow {
+  transform: rotate(180deg);
+}
+
+.gb-acct-card__body {
+  display: none;
+  padding: 12px 14px;
+  border-top: 1px solid rgba(168, 85, 247, 0.15);
+}
+
+.gb-acct-card--expanded .gb-acct-card__body {
+  display: block;
+}
+
+.gb-acct-card__section {
+  margin-bottom: 14px;
+}
+
+.gb-acct-card__section:last-child {
+  margin-bottom: 0;
+}
+
+.gb-acct-card__section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.gb-acct-card__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid #1f2937;
+}
+
+.gb-acct-card__item:last-child {
+  border-bottom: none;
+}
+
+.gb-acct-card__item-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.gb-acct-card__item-badge--settled   { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.gb-acct-card__item-badge--ongoing   { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.gb-acct-card__item-badge--dismissed { background: rgba(107,114,128,0.15); color: #9ca3af; }
+.gb-acct-card__item-badge--convicted { background: rgba(239,68,68,0.25);  color: #fca5a5; }
+.gb-acct-card__item-badge--disputed  { background: rgba(239,68,68,0.15);  color: #ef4444; }
+.gb-acct-card__item-badge--financial { background: rgba(34,197,94,0.1);   color: #22c55e; }
+
+.gb-acct-card__item-title {
+  font-size: 12px;
+  color: #d1d5db;
+  font-weight: 500;
+  margin-bottom: 3px;
+}
+
+.gb-acct-card__item-detail {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.4;
+  margin-bottom: 3px;
+}
+
+.gb-acct-card__item-link,
+.gb-acct-card__item-src {
+  font-size: 10px;
+  color: #1d9bf0;
+  text-decoration: none;
+}
+
+.gb-acct-card__item-link:hover {
+  text-decoration: underline;
+}
+
 /* ─── Add Context Button ──────────────────────────────────────────────────── */
 
 .gb-add-context {
