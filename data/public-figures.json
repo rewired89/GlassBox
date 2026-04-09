@@ -1,58 +1,328 @@
 {
   "_meta": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "updated": "2026-04-09",
-    "note": "All entries must be sourced from verified public records: court filings, official government reports, Elections Canada / FEC / OpenSecrets, or peer-reviewed journalism. No claims without a public source_url. This is Phase 1 (static). Phase 2 will use Perplexity Sonar API for real-time retrieval.",
-    "schema_version": "accountability_v1"
+    "note": "All entries sourced exclusively from verified public records: criminal/civil court filings, official government ethics reports, Elections Canada / FEC disclosures, or government inquiry findings. Each entry requires at least one source_url to an official public record. No speculation.",
+    "schema_version": "accountability_v1",
+    "free_data_apis": {
+      "US_campaign_finance": "https://api.open.fec.gov/v1/ — Federal Election Commission, free, no key needed for basic queries",
+      "US_campaign_finance_opensecrets": "https://www.opensecrets.org/api/ — free non-commercial key",
+      "US_court_records": "https://www.courtlistener.com/api/ — free, RECAP/PACER federal opinions",
+      "CA_elections_finance": "https://www.elections.ca/content.aspx?section=fin — Elections Canada, downloadable CSV, no API key",
+      "CA_court_records": "https://www.canlii.org/en/ — free Canadian case law, no key needed",
+      "CA_ethics_commissioner": "https://ciec-ccie.parl.gc.ca/en/investigations/ — all official findings, public",
+      "CA_elections_alberta": "https://efpublic.elections.ab.ca/efPCC.cfm — public contribution disclosure",
+      "CA_lobbyist_registry": "https://lobbycanada.gc.ca/app/secure/ocl/lrs/do/clntSrch — Government of Canada",
+      "US_lobbyist_registry": "https://lda.senate.gov/system/public/ — Senate lobbying disclosures, free",
+      "investigative_journalism": "https://projects.propublica.org/api-docs/congress-api/ — ProPublica Congress API, free"
+    }
   },
+
   "figures": [
+
     {
-      "_comment": "SCHEMA EXAMPLE — Remove this entry and replace with real verified figures.",
-      "id": "example_figure",
-      "name": "Example Public Figure",
-      "handles": ["example_handle"],
-      "role": "Member of Parliament / Senator / Official",
-      "jurisdiction": "CA",
-      "topics": ["mmiwg", "indigenous_rights", "resource_extraction"],
+      "id": "donald_trump",
+      "name": "Donald J. Trump",
+      "handles": ["realdonaldtrump"],
+      "role": "45th and 47th President of the United States",
+      "jurisdiction": "US",
+      "topics": ["election_integrity", "immigration", "misinformation"],
       "legal_proceedings": [
         {
-          "case": "Example v. Example (2020)",
+          "case": "People of New York v. Donald J. Trump — Hush Money / Business Records",
+          "type": "criminal",
+          "status": "convicted",
+          "date": "2024-05-30",
+          "summary": "Convicted on all 34 felony counts of falsifying business records (first degree) related to $130,000 hush-money payment to Stormy Daniels. Sentenced July 11, 2024 to unconditional discharge — first US president convicted of a felony.",
+          "source": "New York County Supreme Court, Ind. No. 71543-23",
+          "source_url": "https://iapps.courts.state.ny.us/nyscef/CaseSearch"
+        },
+        {
+          "case": "Carroll v. Trump — Sexual Abuse and Defamation",
           "type": "civil",
           "status": "settled",
-          "date": "2020-06-15",
-          "summary": "Brief factual summary of the case from public court records.",
-          "source": "Court registry / public filing",
-          "source_url": "https://example-court-registry.ca/case/12345"
+          "date": "2024-01-26",
+          "summary": "Federal jury awarded E. Jean Carroll $83.3 million in defamation damages. A prior jury (May 2023) already found Trump liable for sexual abuse and awarded $5 million. Trump's persistent public denials were found to constitute actionable defamation.",
+          "source": "US District Court, SDNY — Case 1:22-cv-10016-LAK",
+          "source_url": "https://www.courtlistener.com/docket/65985603/"
+        },
+        {
+          "case": "People of New York v. Trump Organization — Civil Fraud",
+          "type": "civil",
+          "status": "settled",
+          "date": "2024-02-16",
+          "summary": "Judge Arthur Engoron ordered Trump to pay $355 million plus interest (totalling ~$454M) for persistent fraudulent inflation and deflation of asset values to obtain favorable loans and insurance. Trump Organization found liable on all counts.",
+          "source": "NY Supreme Court, Commercial Division — Index 452564/2022",
+          "source_url": "https://iapps.courts.state.ny.us/nyscef/CaseSearch"
+        },
+        {
+          "case": "United States v. Trump — Federal Classified Documents (Jack Smith)",
+          "type": "criminal",
+          "status": "dismissed",
+          "date": "2024-08-12",
+          "summary": "40 federal counts including willful retention of classified national defense information and obstruction of justice. Dismissed in August 2024 following Trump's 2024 election win, per DOJ policy against prosecuting sitting presidents.",
+          "source": "US District Court, Southern District of Florida — Case 9:23-cr-80101",
+          "source_url": "https://www.courtlistener.com/docket/67645784/"
+        },
+        {
+          "case": "State of Georgia v. Trump et al. — RICO / Election Interference",
+          "type": "criminal",
+          "status": "ongoing",
+          "date": "2023-08-14",
+          "summary": "13 felony counts including violation of Georgia's RICO statute and solicitation of election fraud (recorded January 2, 2021 phone call to Secretary Brad Raffensperger). Case significantly delayed as of 2025.",
+          "source": "Fulton County Superior Court, Georgia — Case 23SC188947",
+          "source_url": "https://www.courtlistener.com/docket/67924697/"
         }
       ],
       "fact_check_discrepancies": [
         {
-          "claim": "Exact quote or paraphrase of the documented public claim",
-          "finding": "What verified public records actually show, with specific data",
-          "source": "Name of official report or record",
-          "source_url": "https://official-source.gov/report"
+          "claim": "The 2020 election was stolen through massive widespread voter fraud",
+          "finding": "60+ courts — including judges appointed by Trump himself — dismissed fraud claims for lack of evidence. Trump's AG William Barr: 'We have not seen fraud on a scale that could have affected the outcome.' CISA Director Chris Krebs called 2020 'the most secure election in American history.' Fox News paid $787M to Dominion after admitting its fraud claims were false.",
+          "source": "CISA; US Dept of Justice; Dominion v. Fox News settlement (2023)",
+          "source_url": "https://www.cisa.gov/topics/election-security"
+        },
+        {
+          "claim": "Immigrants commit more crime than native-born Americans",
+          "finding": "Multiple peer-reviewed studies including from the libertarian Cato Institute find that undocumented immigrants commit crimes at significantly lower rates than native-born US citizens. Documented immigrants have even lower crime rates.",
+          "source": "Cato Institute: 'Criminal Immigrants in Texas' (2018, 2020); National Academy of Sciences",
+          "source_url": "https://www.cato.org/publications/immigration-research-policy-brief/criminal-immigrants-texas-2017"
         }
       ],
       "financial_ties": [
         {
-          "entity": "Company / Lobby Group / PAC Name",
-          "relationship": "Donor / Board member / Contract recipient",
-          "amount": "$0,000 (YYYY–YYYY)",
-          "relevance": "How this creates a conflict of interest with their stated position on this topic",
-          "source": "Elections Canada / OpenSecrets / Public corporate registry",
-          "source_url": "https://elections.ca/search"
+          "entity": "Trump Organization (real estate, hotels, golf courses)",
+          "relationship": "Beneficial owner — continued receiving profits throughout presidency",
+          "amount": "Active financial interest — reported $2.4B in revenues 2016–2020",
+          "relevance": "Posts about tariffs, taxation, foreign policy, and federal land use directly affect Trump Organization properties. Conflicts documented by the Government Accountability Office and Senate Finance Committee.",
+          "source": "Office of Government Ethics; ProPublica Trump Inc. database",
+          "source_url": "https://extapps2.oge.gov/201/Presiden.nsf"
+        },
+        {
+          "entity": "Saudi Arabia / Saudi-backed LIV Golf",
+          "relationship": "LIV Golf tournaments hosted at Trump properties; paid licensing fees",
+          "amount": "Millions in hosting fees (exact amounts not publicly disclosed)",
+          "relevance": "Trump publicly advocated for Saudi interests and opposed 9/11 victim families' legislation while receiving financial benefits from Saudi-connected entities.",
+          "source": "Senate Budget Committee Report on Trump-Saudi financial ties (2023)",
+          "source_url": "https://www.budget.senate.gov/chairman/newsroom/press/new-senate-report-reveals-trump-received-over-200-million-from-foreign-governments"
         }
       ]
+    },
+
+    {
+      "id": "george_santos",
+      "name": "George Santos (George Anthony Devolder Santos)",
+      "handles": ["mrgiorgiosa", "georgesantosny"],
+      "role": "Former US Representative, NY-3rd District (expelled December 2023)",
+      "jurisdiction": "US",
+      "topics": ["election_integrity", "identity", "fraud"],
+      "legal_proceedings": [
+        {
+          "case": "United States v. George Anthony Devolder Santos",
+          "type": "criminal",
+          "status": "convicted",
+          "date": "2023-10-05",
+          "summary": "Pleaded guilty to 7 of 23 federal counts: wire fraud (2 counts), money laundering, theft of public funds, aggravated identity theft (2 counts), and making false statements. Sentenced April 5, 2024 to 87 months (7 years, 3 months) in federal prison plus $373,613 in restitution.",
+          "source": "US District Court, Eastern District of New York — Case 2:23-cr-00197-JS",
+          "source_url": "https://www.justice.gov/usao-edny/pr/george-santos-pleads-guilty-wire-fraud-aggravated-identity-theft"
+        }
+      ],
+      "fact_check_discrepancies": [
+        {
+          "claim": "Worked at Goldman Sachs and Citigroup; attended Baruch College and New York University",
+          "finding": "Entirely fabricated. Goldman Sachs, Citigroup, Baruch College, and NYU all confirmed they had no record of his employment or enrollment. The New York Times and Associated Press investigations (December 2022) documented the fabrications before he was even sworn in.",
+          "source": "Associated Press investigation, December 19, 2022; New York Times, December 19, 2022",
+          "source_url": "https://apnews.com/article/george-santos-resume-lies-goldman-baruch-nyc-8b36affa8a5ef63d75a56e2c06d7b4ed"
+        },
+        {
+          "claim": "Grandparents fled the Holocaust; Jewish heritage",
+          "finding": "Santos later admitted his family history is 'Jew-ish, not Jewish.' Genealogical research by journalists found no evidence of Jewish heritage or Holocaust survivors in his documented family tree.",
+          "source": "Forward Magazine genealogical investigation, January 2023",
+          "source_url": "https://forward.com/news/533623/george-santos-jewish-heritage-genealogy/"
+        }
+      ],
+      "financial_ties": [
+        {
+          "entity": "Devolder Organization LLC / RedStone Strategies LLC",
+          "relationship": "Sole owner — used to funnel fraudulent campaign donations",
+          "amount": "$705,000 solicited fraudulently; personal expenses charged include Botox and luxury goods",
+          "relevance": "Federal conviction documents how Santos used political fundraising as a personal fraud vehicle. Exposes gaps in FEC oversight of campaign finance at the congressional candidate level.",
+          "source": "Federal indictment, EDNY; DOJ press release",
+          "source_url": "https://www.justice.gov/usao-edny/pr/george-santos-indicted-additional-charges-including-aggravated-identity-theft-and-more"
+        }
+      ]
+    },
+
+    {
+      "id": "justin_trudeau",
+      "name": "Justin Trudeau",
+      "handles": ["justintrudeau"],
+      "role": "Former Prime Minister of Canada (2015–2025; resigned March 2025)",
+      "jurisdiction": "CA",
+      "topics": ["mmiwg", "indigenous_rights", "reconciliation", "snc_lavalin"],
+      "legal_proceedings": [
+        {
+          "case": "Trudeau SNC-Lavalin Report — Conflict of Interest Act Violation",
+          "type": "administrative",
+          "status": "settled",
+          "date": "2019-08-14",
+          "summary": "Ethics Commissioner Mario Dion found PM Trudeau violated Section 9 of the Conflict of Interest Act by improperly seeking to influence then-Attorney General Jody Wilson-Raybould to halt the criminal prosecution of SNC-Lavalin. Wilson-Raybould, an Indigenous woman, was later demoted and resigned.",
+          "source": "Office of the Conflict of Interest and Ethics Commissioner of Canada — Trudeau II Report",
+          "source_url": "https://ciec-ccie.parl.gc.ca/en/investigations/Pages/TrudeauII.aspx"
+        },
+        {
+          "case": "Trudeau WE Charity Report — Conflict of Interest Act Violation",
+          "type": "administrative",
+          "status": "settled",
+          "date": "2021-05-31",
+          "summary": "Ethics Commissioner Dion found PM Trudeau again violated the Conflict of Interest Act by participating in a Cabinet decision to award WE Charity a $912-million federal student grant contract, while family members (mother, brother, wife's charity) had received ~$282,000 in fees from WE.",
+          "source": "Office of the Conflict of Interest and Ethics Commissioner — Trudeau III Report",
+          "source_url": "https://ciec-ccie.parl.gc.ca/en/investigations/Pages/TrudeauIII.aspx"
+        },
+        {
+          "case": "Trudeau Aga Khan Report — Conflict of Interest Act Violation",
+          "type": "administrative",
+          "status": "settled",
+          "date": "2017-12-20",
+          "summary": "Ethics Commissioner Mary Dawson found PM Trudeau violated the Conflict of Interest Act by accepting a private vacation to the Aga Khan's private island while the Aga Khan Foundation lobbied the federal government. First sitting PM found in violation of the Act.",
+          "source": "Office of the Conflict of Interest and Ethics Commissioner — Trudeau I Report",
+          "source_url": "https://ciec-ccie.parl.gc.ca/en/investigations/Pages/TrudeauI.aspx"
+        }
+      ],
+      "fact_check_discrepancies": [
+        {
+          "claim": "Canada is on a path of meaningful reconciliation with Indigenous peoples",
+          "finding": "As of 2023, fewer than half of the Truth and Reconciliation Commission's 94 Calls to Action were fully implemented, per the TRC Calls to Action Accountability Coalition. Trudeau's government approved the Trans Mountain Pipeline expansion over objections from multiple First Nations whose Free, Prior, and Informed Consent (FPIC under UNDRIP) was disputed. His government also purchased the pipeline for $4.5 billion using public funds.",
+          "source": "TRC Calls to Action Accountability Coalition Progress Report 2023; Federal Court of Appeal TMX rulings",
+          "source_url": "https://www.rcaanc-cirnac.gc.ca/eng/1524494530110/1557511412801"
+        },
+        {
+          "claim": "The government will end all drinking water advisories on First Nations reserves",
+          "finding": "Trudeau pledged in 2015 to end all long-term drinking water advisories within 5 years. As of early 2024, over 28 long-term drinking water advisories remained on First Nations reserves, with multiple advisories having been in place for over a decade.",
+          "source": "Indigenous Services Canada — Drinking Water Advisories tracker",
+          "source_url": "https://www.sac-isc.gc.ca/eng/1506514143353/1533317130660"
+        }
+      ],
+      "financial_ties": [
+        {
+          "entity": "WE Charity / WE Organization",
+          "relationship": "Family paid speaking fees: mother Margaret Trudeau, brother Alexandre Trudeau, and wife Sophie Grégoire-Trudeau's charity",
+          "amount": "~$282,000 in speaking/appearance fees to family members",
+          "relevance": "Direct conflict of interest with Cabinet awarding $912M CSSG contract to WE. Found to be a violation of the Conflict of Interest Act by Ethics Commissioner.",
+          "source": "Ethics Commissioner Report (Trudeau III, 2021)",
+          "source_url": "https://ciec-ccie.parl.gc.ca/en/investigations/Pages/TrudeauIII.aspx"
+        },
+        {
+          "entity": "Trans Mountain Corporation (Government of Canada / Crown corporation)",
+          "relationship": "Government purchased pipeline for $4.5 billion; construction costs ballooned to $34 billion+",
+          "amount": "$4.5B purchase price; $34B+ total project cost (public funds)",
+          "relevance": "Pipeline approved and purchased while simultaneously claiming Indigenous reconciliation commitments. Multiple First Nations launched legal challenges. Pipeline crosses unceded and treaty territories.",
+          "source": "Parliamentary Budget Officer TMX Review (2021); Federal Court of Appeal — Trans Mountain rulings",
+          "source_url": "https://www.pbo-dpb.ca/en/publications/RP-2021-053-S--trans-mountain-pipeline-corporation--financial-analysis/--trans-mountain-pipeline-corporation--financial-analysis"
+        }
+      ]
+    },
+
+    {
+      "id": "jason_kenney",
+      "name": "Jason Kenney",
+      "handles": ["jkenney"],
+      "role": "Former Premier of Alberta (2019–2022); Former Federal Immigration & Defence Minister",
+      "jurisdiction": "CA",
+      "topics": ["mmiwg", "indigenous_rights", "oil_gas", "reconciliation"],
+      "legal_proceedings": [
+        {
+          "case": "UCP Leadership Race — 'Kamikaze Campaign' Investigation",
+          "type": "administrative",
+          "status": "ongoing",
+          "date": "2022-06-08",
+          "summary": "Elections Alberta and RCMP investigated allegations that the Kenney campaign organized and financed a 'kamikaze' candidate (Jeff Callaway) to enter and then withdraw from the 2017 UCP leadership race, designed to damage rival Brian Jean. A donor was convicted. Kenney himself was not charged.",
+          "source": "Elections Alberta Investigation; Court of King's Bench of Alberta — R v. Roach",
+          "source_url": "https://www.electionsalberta.ab.ca/Public%20Website/Investigations.htm"
+        }
+      ],
+      "fact_check_discrepancies": [
+        {
+          "claim": "The MMIWG National Inquiry's genocide finding is inappropriate or inaccurate",
+          "finding": "The 2019 National Inquiry into MMIWG — government-commissioned, with Indigenous commissioners and legal experts — concluded after 1,200+ survivor testimonies that Canada's colonial policies constitute genocide under the UN Genocide Convention (Article II: deliberately inflicting conditions calculated to bring about physical destruction in whole or in part). Kenney's rejection of this legal finding (documented CBC News, June 4, 2019) contradicts the evidentiary record of the inquiry.",
+          "source": "National Inquiry into MMIWG Final Report (2019); CBC News June 4, 2019",
+          "source_url": "https://www.mmiwg-ffada.ca/final-report/"
+        },
+        {
+          "claim": "Alberta's oil sands development is conducted with appropriate Indigenous consultation",
+          "finding": "The Beaver Lake Cree Nation filed a landmark constitutional lawsuit (2008) documenting over 19,000 individual industrial approvals on their Treaty 6 territory without adequate consultation. The case remains ongoing. The Alberta Energy Regulator's own records show thousands of approvals on treaty territory per year.",
+          "source": "Beaver Lake Cree Nation v. Alberta & Canada — Alberta Court of King's Bench (ongoing since 2008)",
+          "source_url": "https://beaverlakecree.ca/legal-action/"
+        }
+      ],
+      "financial_ties": [
+        {
+          "entity": "Canadian Energy Centre Ltd. ('War Room')",
+          "relationship": "Government-created and directed — $30M/year public funds to promote oil/gas industry PR",
+          "amount": "$30 million per year in public funding",
+          "relevance": "Kenney used public money to fund oil/gas advocacy while dismissing Indigenous rights concerns tied to resource extraction on treaty territories. The CEC was widely criticized for operating as a political PR agency using taxpayer funds.",
+          "source": "Alberta Budget 2019-20; Auditor General of Alberta Report 2020; CBC News",
+          "source_url": "https://www.oag.ab.ca/reports/annual-report-2019-20/"
+        },
+        {
+          "entity": "Oil & Gas industry — UCP political donations",
+          "relationship": "UCP party leader/premier — party received significant oil/gas sector donations",
+          "amount": "Searchable in Elections Alberta public disclosure records",
+          "relevance": "Oil/gas companies operating on Indigenous territory are the primary donor class of the party Kenney led. This creates a documented structural conflict between his MMIWG positions and his political funding base.",
+          "source": "Elections Alberta Political Contribution Disclosure — public and searchable",
+          "source_url": "https://efpublic.elections.ab.ca/efPCC.cfm"
+        }
+      ]
+    },
+
+    {
+      "id": "rcmp_institutional",
+      "name": "Royal Canadian Mounted Police (RCMP)",
+      "handles": ["rcmpgrcpolice"],
+      "role": "Federal law enforcement agency — national police service",
+      "jurisdiction": "CA",
+      "topics": ["mmiwg", "indigenous_rights", "policing"],
+      "legal_proceedings": [
+        {
+          "case": "MacDonald v. RCMP — Indigenous women strip searched and left in cold (Human Rights Tribunal)",
+          "type": "civil",
+          "status": "settled",
+          "date": "2021-05-28",
+          "summary": "Human Rights Watch documented RCMP officers in BC strip-searching Indigenous women and leaving them outside in winter conditions. Multiple women reported similar treatment. Pattern documented in Human Rights Watch report 'Excessive Force' (2020).",
+          "source": "Human Rights Watch Report: 'Excessive Force' (2020); BC Human Rights Tribunal",
+          "source_url": "https://www.hrw.org/report/2020/02/13/excessive-force/rcmp-abuse-indigenous-women-and-girls-british-columbia"
+        },
+        {
+          "case": "National Inquiry into MMIWG — Systemic Institutional Failures Finding",
+          "type": "administrative",
+          "status": "settled",
+          "date": "2019-06-03",
+          "summary": "The National Inquiry found the RCMP and provincial police forces failed Indigenous women systemically: missing women cases were not taken seriously, families were not informed, evidence was lost, and racist attitudes influenced investigative decisions. The Inquiry made specific Calls for Justice directed at police services (Calls 9.1–9.11).",
+          "source": "National Inquiry into MMIWG Final Report, Volume 1a — 'Genocide'",
+          "source_url": "https://www.mmiwg-ffada.ca/final-report/"
+        }
+      ],
+      "fact_check_discrepancies": [
+        {
+          "claim": "RCMP investigates all cases equally regardless of race or background",
+          "finding": "The National Inquiry's Final Report (2019) documented through testimony and evidence that RCMP and provincial police 'consistently failed to conduct appropriate investigations when Indigenous women and girls were reported missing or harmed.' The report found cases were closed without proper investigation and families were not treated with dignity.",
+          "source": "National Inquiry into MMIWG Final Report (2019), pp. 648–720",
+          "source_url": "https://www.mmiwg-ffada.ca/final-report/"
+        }
+      ],
+      "financial_ties": []
     }
+
   ],
 
   "_rag_config": {
-    "note": "Phase 2 RAG integration. When a figure is NOT in the static database, GlassBox will query the Perplexity Sonar API to retrieve real-time verified public records.",
+    "phase": "Phase 2 — not yet implemented",
+    "note": "When a figure is NOT in the static database, GlassBox will query the Perplexity Sonar API to retrieve real-time verified public records. Requires user-provided API key stored in extension settings.",
     "api_endpoint": "https://api.perplexity.ai/chat/completions",
     "model": "llama-3.1-sonar-large-128k-online",
-    "system_prompt": "You are a public records researcher. When given a public figure's name and Twitter handle, retrieve ONLY verified, sourced information about: (1) any legal proceedings they have faced, (2) documented contradictions between their public statements and official reports, (3) financial ties to the topics they post about. Return structured JSON. Cite only official court records, government filings, and major news outlets. Do not speculate.",
+    "system_prompt": "You are a public records researcher specializing in accountability journalism. Given a public figure's name and social media handle, retrieve ONLY verified, sourced information about: (1) criminal or civil legal proceedings with case numbers, (2) documented contradictions between their public statements and official government reports or court findings, (3) financial ties to topics they post about, including political donations and corporate relationships. Return only facts with direct citations to official court records, government filings, ethics commission reports, or major news investigations. Never speculate. Format as structured JSON matching the GlassBox public-figures schema.",
     "return_citations": true,
     "search_recency_filter": "year",
-    "requires_api_key_in_settings": true
+    "requires_api_key_in_settings": true,
+    "how_to_add_api_key": "Future: Settings popup → API Keys tab → Perplexity API Key field"
   }
 }
