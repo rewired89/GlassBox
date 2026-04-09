@@ -1,0 +1,129 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "updated": "2026-04-09",
+    "note": "Claim-based fact checks. All corrections are sourced from official public records, government inquiry findings, or peer-reviewed research. Each entry requires BOTH a claim_pattern AND a context_keyword to trigger."
+  },
+  "fact_checks": [
+    {
+      "id": "mmiwg_genocide_denial",
+      "claim_patterns": [
+        "not genocide",
+        "wasn't genocide",
+        "isn't genocide",
+        "no genocide",
+        "not a genocide",
+        "there's no genocide",
+        "there was no genocide",
+        "calling it genocide",
+        "claim it's genocide",
+        "claiming genocide"
+      ],
+      "context_keywords": [
+        "indigenous", "mmiwg", "native women", "missing women",
+        "first nations", "aboriginal women", "indigenous women", "murdered women"
+      ],
+      "verdict": "Contradicts National Inquiry findings",
+      "fact": "The 2019 National Inquiry into MMIWG — government-commissioned, led by Indigenous commissioners and legal experts — concluded Canada's colonial policies constitute genocide against Indigenous women and girls under international law (Genocide Convention, Article II).",
+      "source": "National Inquiry into MMIWG — Final Report (2019)",
+      "source_url": "https://www.mmiwg-ffada.ca/final-report/",
+      "topic_card_id": "mmiwg_indigenous_women"
+    },
+    {
+      "id": "mmiwg_numbers_denial",
+      "claim_patterns": [
+        "made up numbers",
+        "fake statistics",
+        "exaggerated numbers",
+        "not that many",
+        "overblown",
+        "false statistics",
+        "inflated numbers"
+      ],
+      "context_keywords": [
+        "mmiwg", "missing indigenous", "native women", "indigenous women", "murdered women", "aboriginal women"
+      ],
+      "verdict": "Contradicts RCMP and Statistics Canada data",
+      "fact": "RCMP data (2014) documented 1,181 cases of missing and murdered Indigenous women and girls since 1980. Indigenous women make up 4% of Canada's female population but 12% of female homicide victims. Statistics Canada confirms they are 4.5x more likely to be murdered.",
+      "source": "RCMP National Operational Overview (2014); Statistics Canada Homicide Survey",
+      "source_url": "https://www.rcmp-grc.gc.ca/wam/media/460/original/0cbd8968a049aa0b44d343e76b4a9478.pdf",
+      "topic_card_id": "mmiwg_indigenous_women"
+    },
+    {
+      "id": "climate_no_consensus",
+      "claim_patterns": [
+        "scientists disagree",
+        "no scientific consensus",
+        "scientists don't agree",
+        "not settled science",
+        "debate among scientists",
+        "50% of scientists",
+        "many scientists doubt"
+      ],
+      "context_keywords": [
+        "climate", "global warming", "climate change", "carbon emissions"
+      ],
+      "verdict": "Contradicts peer-reviewed literature",
+      "fact": "97% of actively publishing climate scientists agree climate change is real and human-caused — based on analysis of 11,944 peer-reviewed studies (Cook et al., 2013). NASA, NOAA, and 200+ scientific organizations concur.",
+      "source": "Cook et al. (2013), Environmental Research Letters; NASA Global Climate Change",
+      "source_url": "https://iopscience.iop.org/article/10.1088/1748-9326/8/2/024024",
+      "topic_card_id": "climate_change_consensus"
+    },
+    {
+      "id": "vaccine_autism",
+      "claim_patterns": [
+        "vaccines cause autism",
+        "vaccine autism link",
+        "autism from vaccines",
+        "vaccines gave my child autism",
+        "mmr causes autism"
+      ],
+      "context_keywords": [
+        "vaccine", "vaccin", "autism", "mmr", "immuniz"
+      ],
+      "verdict": "Based on retracted fraudulent research",
+      "fact": "The 1998 Wakefield study was retracted by The Lancet for data fabrication. Wakefield lost his medical license. 95+ studies across millions of children have found no causal link between vaccines and autism.",
+      "source": "The Lancet retraction (2010); Cochrane Review (2020); WHO",
+      "source_url": "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(10)60175-4/fulltext",
+      "topic_card_id": "vaccine_safety"
+    },
+    {
+      "id": "election_stolen_2020",
+      "claim_patterns": [
+        "election was stolen",
+        "stolen election",
+        "rigged 2020",
+        "2020 was stolen",
+        "widespread voter fraud",
+        "massive fraud",
+        "fraud was proven"
+      ],
+      "context_keywords": [
+        "2020", "election", "biden", "trump", "vote", "ballot", "dominion"
+      ],
+      "verdict": "Contradicts 60+ court rulings and official investigations",
+      "fact": "60+ courts — including Trump-appointed judges — dismissed fraud claims for lack of evidence. Trump's own AG Barr stated no fraud affected the outcome. CISA called 2020 'the most secure election in American history.' Fox News paid $787M after admitting its fraud claims were false.",
+      "source": "US Dept of Justice; CISA; Dominion v. Fox News settlement",
+      "source_url": "https://www.cisa.gov/topics/election-security",
+      "topic_card_id": "election_integrity"
+    },
+    {
+      "id": "indigenous_land_claim",
+      "claim_patterns": [
+        "they were here first is a myth",
+        "natives weren't here first",
+        "everyone migrated",
+        "no one is truly indigenous",
+        "settlers built this country"
+      ],
+      "context_keywords": [
+        "indigenous", "native", "first nations", "aboriginal", "land", "territory", "settlers"
+      ],
+      "verdict": "Contradicts archaeological and historical record",
+      "fact": "Archaeological evidence documents Indigenous peoples in the Americas for at least 15,000 years — predating European contact by 130+ centuries. The Smithsonian National Museum of the American Indian and Library of Congress confirm this record.",
+      "source": "Smithsonian National Museum of the American Indian; Library of Congress",
+      "source_url": "https://americanindian.si.edu/",
+      "topic_card_id": "native_american_indigeneity"
+    }
+  ]
+}

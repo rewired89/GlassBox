@@ -5,6 +5,45 @@
   },
   "cards": [
     {
+      "id": "mmiwg_indigenous_women",
+      "trigger_phrases": [
+        "mmiwg",
+        "missing and murdered indigenous women",
+        "missing indigenous women",
+        "murdered indigenous women",
+        "murdered indigenous",
+        "missing native women",
+        "2spirit",
+        "two spirit",
+        "mmiw",
+        "indigenous genocide canada",
+        "native women canada"
+      ],
+      "card": {
+        "hook": "What does Canada's own national inquiry actually say?",
+        "title": "MMIWG2S+: National Inquiry Findings",
+        "timeline": [
+          { "date": "1980–2012", "event": "RCMP documents 1,181 cases of missing and murdered Indigenous women and girls. Actual numbers are estimated far higher due to systemic underreporting." },
+          { "date": "2014", "event": "RCMP report confirms Indigenous women are 4.5× more likely to be murdered than non-Indigenous women. They are 4% of Canada's female population but 12% of female homicide victims." },
+          { "date": "2016", "event": "Canada launches National Inquiry into MMIWG — government-commissioned, with Indigenous commissioners and legal experts." },
+          { "date": "June 2019", "event": "National Inquiry Final Report: after 1,200+ testimonies, concludes Canada's colonial policies constitute genocide against Indigenous women and girls under international law." },
+          { "date": "Today", "event": "231 Calls for Justice issued. Implementation remains limited. The violence continues, rooted in systemic colonial structures that have never been fully dismantled." }
+        ],
+        "irony_highlight": "The National Inquiry was commissioned by the Canadian government itself. Denying its findings means rejecting the conclusions of Indigenous commissioners, legal experts, and over 1,200 survivor and family testimonies.",
+        "empathy_angle": "Each statistic represents a daughter, sister, or mother. Many families waited decades for their loved ones' cases to even be investigated — some were never solved.",
+        "sources": [
+          "National Inquiry into MMIWG Final Report (2019) — mmiwg-ffada.ca",
+          "RCMP National Operational Overview: Missing and Murdered Aboriginal Women (2014)",
+          "Statistics Canada: Homicide in Canada (annual)",
+          "Human Rights Watch: Those Who Take Us Away (2013)"
+        ]
+      },
+      "rephrase_suggestions": [
+        "Instead of disputing the genocide finding, try: 'I want to understand the specific legal definition used in the report under international law...'",
+        "Instead of questioning the numbers, try: 'I want to understand how these cases were counted and why underreporting is a documented factor...'"
+      ]
+    },
+    {
       "id": "native_american_indigeneity",
       "trigger_phrases": [
         "go back to your country",

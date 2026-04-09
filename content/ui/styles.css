@@ -612,6 +612,198 @@
   padding: 0 2px;
 }
 
+/* ─── Fact-Check Banner ───────────────────────────────────────────────────── */
+
+.gb-factcheck {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-left: 3px solid #ef4444;
+  border-radius: 0 8px 8px 0;
+  padding: 9px 12px;
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+.gb-factcheck__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.gb-factcheck__icon {
+  font-size: 13px;
+}
+
+.gb-factcheck__verdict {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ef4444;
+}
+
+.gb-factcheck__fact {
+  color: #d1d5db;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.gb-factcheck__source {
+  display: inline-block;
+  font-size: 11px;
+  color: #1d9bf0;
+  text-decoration: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.gb-factcheck__source:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* ─── User Context Card ───────────────────────────────────────────────────── */
+
+.gb-user-context {
+  background: rgba(29, 155, 240, 0.05);
+  border: 1px solid rgba(29, 155, 240, 0.2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin: 6px 0;
+  font-size: 12px;
+}
+
+.gb-user-context__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.gb-user-context__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gb-user-context__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.gb-user-context__item::before {
+  content: '→';
+  color: #4b5563;
+  flex-shrink: 0;
+  font-size: 11px;
+  margin-top: 1px;
+}
+
+.gb-user-context__link {
+  color: #1d9bf0;
+  text-decoration: none;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.gb-user-context__link:hover {
+  text-decoration: underline;
+}
+
+/* ─── Add Context Button ──────────────────────────────────────────────────── */
+
+.gb-add-context {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid rgba(107, 114, 128, 0.3);
+  transition: all 0.15s ease;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.gb-add-context:hover {
+  background: rgba(29, 155, 240, 0.08);
+  color: #1d9bf0;
+  border-color: rgba(29, 155, 240, 0.3);
+}
+
+/* ─── Add Context Form ────────────────────────────────────────────────────── */
+
+.gb-context-form {
+  background: #1e2028;
+  border: 1px solid #2f3241;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gb-context-form__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e7e9ea;
+}
+
+.gb-context-form__input,
+.gb-context-form__note {
+  background: #0f1117;
+  border: 1px solid #374151;
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: #e7e9ea;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gb-context-form__input:focus,
+.gb-context-form__note:focus {
+  border-color: #1d9bf0;
+}
+
+.gb-context-form__input::placeholder,
+.gb-context-form__note::placeholder {
+  color: #4b5563;
+}
+
+.gb-context-form__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.gb-context-confirm {
+  display: inline-block;
+  font-size: 11px;
+  color: #22c55e;
+  padding: 2px 8px;
+  margin-left: 8px;
+  animation: gb-fade-in 0.2s ease;
+}
+
 /* ─── Scrollbar for GB popover ────────────────────────────────────────────── */
 
 .gb-modal::-webkit-scrollbar {

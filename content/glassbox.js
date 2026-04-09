@@ -410,6 +410,153 @@
   }
 
   // ════════════════════════════════════════════════════════════════════════════
+  // FACT-CHECK ENGINE  — detects when content contradicts verified public records
+  // ════════════════════════════════════════════════════════════════════════════
+
+  let _factCheckDB = null;
+
+  async function loadFactChecks() {
+    if (_factCheckDB) return _factCheckDB;
+    try {
+      const url = chrome.runtime.getURL('data/fact-checks.json');
+      const json = await fetch(url).then(r => r.json());
+      _factCheckDB = json.fact_checks || [];
+    } catch { _factCheckDB = []; }
+    return _factCheckDB;
+  }
+
+  // Returns fact_checks whose claim_pattern AND context_keyword both appear in text.
+  // Requiring both prevents false positives (e.g. "not stolen" without election context).
+  async function detectFalseClaims(text) {
+    if (!text || text.length < 15) return [];
+    const checks = await loadFactChecks();
+    const norm = text.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
+    return checks.filter(fc => {
+      const claimMatch = (fc.claim_patterns || []).some(p => norm.includes(p.toLowerCase()));
+      if (!claimMatch) return false;
+      if (fc.context_keywords?.length) {
+        return fc.context_keywords.some(k => norm.includes(k.toLowerCase()));
+      }
+      return true;
+    });
+  }
+
+  function renderFactCheckBanner(fc) {
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'fact-check-banner');
+    el.className = 'gb-factcheck';
+    el.innerHTML = `
+      <div class="gb-factcheck__header">
+        <span class="gb-factcheck__icon">🔎</span>
+        <span class="gb-factcheck__verdict">${fc.verdict}</span>
+      </div>
+      <div class="gb-factcheck__fact">${fc.fact}</div>
+      <a class="gb-factcheck__source" href="${fc.source_url}" target="_blank" rel="noopener noreferrer">📄 ${fc.source}</a>`;
+    return el;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // USER CONTEXT SYSTEM  — per-user public record links stored locally
+  // ════════════════════════════════════════════════════════════════════════════
+
+  const USER_CONTEXT_KEY = 'gb_user_context';
+
+  async function loadUserContext(hash) {
+    try {
+      const result = await chrome.storage.local.get(USER_CONTEXT_KEY);
+      return (result[USER_CONTEXT_KEY] || {})[hash] || [];
+    } catch { return []; }
+  }
+
+  async function saveUserContext(hash, url, note) {
+    try {
+      const result = await chrome.storage.local.get(USER_CONTEXT_KEY);
+      const all = result[USER_CONTEXT_KEY] || {};
+      if (!all[hash]) all[hash] = [];
+      all[hash].push({ url, note: note || '', timestamp: Date.now() });
+      all[hash] = all[hash].slice(-10); // cap at 10 per tweet
+      await chrome.storage.local.set({ [USER_CONTEXT_KEY]: all });
+    } catch {}
+  }
+
+  function renderUserContextCard(items) {
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'user-context-card');
+    el.className = 'gb-user-context';
+    const linksHTML = items.map(item => `
+      <li class="gb-user-context__item">
+        <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="gb-user-context__link">
+          ${item.note || item.url.replace(/^https?:\/\//, '').slice(0, 70)}
+        </a>
+      </li>`).join('');
+    el.innerHTML = `
+      <div class="gb-user-context__header"><span>📎</span><span>Public Records — Added by You</span></div>
+      <ul class="gb-user-context__list">${linksHTML}</ul>`;
+    return el;
+  }
+
+  function showAddContextForm(anchorEl, hash, textEl) {
+    document.querySelectorAll('[data-glassbox="context-form"]').forEach(f => f.remove());
+    const form = document.createElement('div');
+    form.setAttribute('data-glassbox', 'context-form');
+    form.className = 'gb-context-form';
+    form.innerHTML = `
+      <div class="gb-context-form__title">📎 Link a public record</div>
+      <input class="gb-context-form__input" placeholder="URL to report, inquiry, or official source…" type="url">
+      <input class="gb-context-form__note" placeholder="Brief description (optional)">
+      <div class="gb-context-form__actions">
+        <button class="gb-context-form__submit gb-btn gb-btn--primary" style="font-size:12px;padding:5px 10px">Save</button>
+        <button class="gb-context-form__cancel gb-btn gb-btn--ghost" style="font-size:12px;padding:5px 10px">Cancel</button>
+      </div>`;
+
+    const urlInput = form.querySelector('.gb-context-form__input');
+    const noteInput = form.querySelector('.gb-context-form__note');
+
+    form.querySelector('.gb-context-form__cancel').addEventListener('click', e => {
+      e.stopPropagation(); form.remove();
+    });
+    form.querySelector('.gb-context-form__submit').addEventListener('click', async e => {
+      e.stopPropagation();
+      const url = urlInput.value.trim();
+      if (!url || !url.startsWith('http')) {
+        urlInput.style.borderColor = '#ef4444'; return;
+      }
+      await saveUserContext(hash, url, noteInput.value.trim());
+      form.remove();
+      // Show ✓ confirmation inline
+      const confirm = document.createElement('span');
+      confirm.setAttribute('data-glassbox', 'ctx-confirm');
+      confirm.className = 'gb-context-confirm';
+      confirm.textContent = '✓ Saved';
+      anchorEl.after(confirm);
+      setTimeout(() => confirm.remove(), 2500);
+      // Re-render context card
+      if (textEl) {
+        textEl.parentElement?.querySelector('[data-glassbox="user-context-card"]')?.remove();
+        const newCtx = await loadUserContext(hash);
+        if (newCtx.length) {
+          textEl.parentElement?.insertBefore(renderUserContextCard(newCtx), textEl.nextSibling);
+        }
+      }
+    });
+
+    anchorEl.after(form);
+    urlInput.focus();
+  }
+
+  function createAddContextButton(hash, textEl) {
+    const btn = document.createElement('button');
+    btn.setAttribute('data-glassbox', 'add-context-btn');
+    btn.className = 'gb-add-context';
+    btn.textContent = '📎 Add Context';
+    btn.addEventListener('click', e => {
+      e.stopPropagation(); e.preventDefault();
+      showAddContextForm(btn, hash, textEl);
+    });
+    return btn;
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
   // INDICATOR UI  (badges + popovers)
   // ════════════════════════════════════════════════════════════════════════════
 
@@ -524,7 +671,7 @@
     document.querySelector('[data-glassbox="modal-overlay"]')?.remove();
   }
 
-  function showReflectionModal({ manipulation, toxicity, credibility, postText, contextCards, onProceed, onCancel }) {
+  function showReflectionModal({ manipulation, toxicity, falseClaims, credibility, postText, contextCards, onProceed, onCancel }) {
     removeModal();
 
     const hasToxic       = toxicity?.toxic;
@@ -532,9 +679,12 @@
     const hasManipulation = manipulation?.is_manipulative;
     const hasLowCred     = credibility?.score != null && credibility.score < 4;
 
+    const hasFalseClaimsFlag = falseClaims?.length > 0;
+
     let emoji = '💭', headline = 'Before you share…', subline = 'GlassBox found some things worth knowing.';
-    if (hasToxic)        { emoji = '🤔'; headline = 'Quick thought before you post'; subline = 'This language may have more impact than you expect.'; }
-    else if (hasLowCred) { emoji = '⚠️'; subline = 'The linked source has a low credibility rating.'; }
+    if (hasToxic)             { emoji = '🤔'; headline = 'Quick thought before you post'; subline = 'This language may have more impact than you expect.'; }
+    else if (hasFalseClaimsFlag) { emoji = '🔎'; headline = 'This contradicts verified records'; subline = 'GlassBox found claims that conflict with official findings.'; }
+    else if (hasLowCred)      { emoji = '⚠️'; subline = 'The linked source has a low credibility rating.'; }
     else if (hasManipulation) { emoji = '🔍'; headline = 'Heads up'; subline = 'This content uses patterns associated with manipulation.'; }
 
     const findings = [];
@@ -543,6 +693,8 @@
     else if (hasSensitive) findings.push({ icon: '💬', text: 'Contains language with historical or social weight', detail: null });
     if (hasManipulation) findings.push({ icon: '🎭', text: `${manipulation.tactics.length} manipulation ${manipulation.tactics.length === 1 ? 'tactic' : 'tactics'} detected`,
                                          detail: manipulation.tactics.slice(0, 2).map(t => t.label).join(', ') });
+    if (hasFalseClaimsFlag) falseClaims.slice(0, 2).forEach(fc =>
+      findings.push({ icon: '🔎', text: fc.verdict, detail: `Source: ${fc.source}` }));
 
     const findingsHTML = findings.length ? `
       <div class="gb-modal__findings">
@@ -670,9 +822,21 @@
       if (row.children.length) actionBar.appendChild(row);
     }
 
+    const postHash = hashString(text.slice(0, 100));
+    const isManipulativeOrToxic = manipulation?.is_manipulative || toxicity?.toxic || toxicity?.sensitive || false;
+
+    // Fact-check — detect claims that contradict verified public records
+    const falseClaims = await detectFalseClaims(text);
+    if (falseClaims.length && textEl) {
+      falseClaims.slice(0, 2).forEach(fc => {
+        const banner = renderFactCheckBanner(fc);
+        textEl.parentElement?.insertBefore(banner, textEl.nextSibling);
+      });
+    }
+
     // Context cards — always show for flagged content; show by topic match for clean content
     if (settings.showContextCards && textEl) {
-      const isFlag = manipulation?.is_manipulative || toxicity?.toxic || toxicity?.sensitive;
+      const isFlag = isManipulativeOrToxic || falseClaims.length > 0;
       const cardsToShow = isFlag ? await findBestCard(text) : await findMatchingCards(text);
       if (cardsToShow.length) {
         const cardContainer = document.createElement('div');
@@ -682,17 +846,28 @@
       }
     }
 
-    // Record view — count toxicity-based flags too
-    const isManipulativeOrToxic = manipulation?.is_manipulative || toxicity?.toxic || toxicity?.sensitive || false;
+    // User context links — show saved links + "Add Context" button on flagged posts
+    const isAnyFlag = isManipulativeOrToxic || falseClaims.length > 0;
+    if (isAnyFlag && textEl) {
+      const userCtx = await loadUserContext(postHash);
+      if (userCtx.length) {
+        textEl.parentElement?.insertBefore(renderUserContextCard(userCtx), textEl.nextSibling);
+      }
+      // Add the "Add Context" button to the annotation row
+      const annotRow = postEl.querySelector('[data-glassbox="annotation-row"]');
+      if (annotRow) annotRow.appendChild(createAddContextButton(postHash, textEl));
+    }
+
+    // Record view
     recordPostView({
       platform: 'twitter',
       source_domain: primaryCred?.domain || null,
       credibility_score: primaryCred?.score || null,
-      manipulation_detected: isManipulativeOrToxic,
+      manipulation_detected: isAnyFlag,
       tactics_used: manipulation?.tactics?.map(t => t.tactic) || [],
       user_engaged: false,
       engagement_type: 'view',
-      post_text_hash: hashString(text.slice(0, 100)),
+      post_text_hash: postHash,
     });
   }
 
@@ -741,7 +916,22 @@
 
       // analyzeToxicity is fully synchronous — run it immediately
       const toxicity = analyzeToxicity(text);
-      if (!toxicity.toxic && !toxicity.sensitive) return;
+
+      // Quick synchronous false-claim check — catches factual falsehoods with polite language
+      const COMPOSE_CLAIM_PATTERNS = [
+        /\bvaccines? (cause|caused|causes) autism\b/i,
+        /\bautism (from|caused by) vaccines?\b/i,
+        /\b(the |2020 )?election was stolen\b/i,
+        /\b(stolen|rigged) election\b/i,
+        /\b2020 was stolen\b/i,
+        /\b(there'?s? (no|no such thing as) genocide|not (a )?genocide|wasn'?t genocide)\b/i,
+        /\b(climate change|global warming) (is|are) (a )?(hoax|fake|fraud|scam)\b/i,
+        /\bno scientific consensus (on|about) climate\b/i,
+        /\bmmiwg.{0,30}(not|no|never|wasn.t|isn.t)\b/i,
+      ];
+      const hasFalseClaim = COMPOSE_CLAIM_PATTERNS.some(p => p.test(text));
+
+      if (!toxicity.toxic && !toxicity.sensitive && !hasFalseClaim) return;
 
       // Block the event NOW, before Twitter's handler sees it
       e.preventDefault();
@@ -758,10 +948,17 @@
           return;
         }
 
-        const [manipulation, contextCards] = await Promise.all([
+        const [manipulation, contextCards, falseClaims] = await Promise.all([
           detectManipulation(text),
           findBestCard(text),
+          detectFalseClaims(text),
         ]);
+
+        // Merge fact-check cards into contextCards if no topic card matched
+        const allCards = contextCards.length ? contextCards
+          : falseClaims.length && falseClaims[0].topic_card_id
+            ? (await loadCards()).filter(c => c.id === falseClaims[0].topic_card_id)
+            : contextCards;
 
         // Record that a post attempt was intercepted
         recordPostView({
@@ -776,17 +973,16 @@
         });
 
         showReflectionModal({
-          manipulation, toxicity,
+          manipulation, toxicity, falseClaims,
           credibility: null,
           postText: truncate(text, 120),
-          contextCards,
+          contextCards: allCards,
           onProceed: () => {
-            // Update: user decided to post anyway
             recordPostView({
               platform: 'twitter',
               source_domain: null,
               credibility_score: null,
-              manipulation_detected: manipulation?.is_manipulative || toxicity.toxic || toxicity.sensitive,
+              manipulation_detected: manipulation?.is_manipulative || toxicity.toxic || toxicity.sensitive || hasFalseClaim,
               tactics_used: manipulation?.tactics?.map(t => t.tactic) || [],
               user_engaged: true,
               engagement_type: 'share',
