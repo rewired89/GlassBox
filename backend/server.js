@@ -1,38 +1,40 @@
 /**
- * GlassBox API Server v2
+ * GlassBox API Server v2.1
  * ───────────────────────────────────────────────────────────────────────────
- * Zero native dependencies — runs on any Node.js 20 host without build tools.
- * Data persisted as JSON files (figures.json + cache.json in DATA_DIR).
+ * Storage: PostgreSQL when DATABASE_URL is set (persistent on Railway),
+ *          JSON files otherwise (local dev / fallback).
+ * Zero native build-tool dependencies.
  */
 
-import express      from 'express';
-import cors         from 'cors';
-import rateLimit    from 'express-rate-limit';
-import Anthropic    from '@anthropic-ai/sdk';
-import crypto       from 'crypto';
-import path         from 'path';
-import fs           from 'fs';
+import express   from 'express';
+import cors      from 'cors';
+import rateLimit from 'express-rate-limit';
+import Anthropic from '@anthropic-ai/sdk';
+import crypto    from 'crypto';
+import path      from 'path';
+import fs        from 'fs';
+import pg        from 'pg';
 import { fileURLToPath } from 'url';
 
+const { Pool } = pg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Config ────────────────────────────────────────────────────────────────────
+// ── Config ─────────────────────────────────────────────────────────────────────
 const PORT      = process.env.PORT      || 3001;
 const ADMIN_KEY = process.env.ADMIN_KEY || 'glassbox-admin-change-me';
 const DATA_DIR  = process.env.DATA_DIR  || path.join(__dirname, 'data');
+const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.warn('[warn] ANTHROPIC_API_KEY not set — /api/analyze will return errors');
+  console.warn('[warn] ANTHROPIC_API_KEY not set — /api/analyze will fail');
 }
-
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'missing' });
 
-// ── JSON file store (no native deps) ─────────────────────────────────────────
+// ── JSON file fallback (used when no DATABASE_URL) ────────────────────────────
 const FIGURES_FILE = path.join(DATA_DIR, 'figures.json');
 const CACHE_FILE   = path.join(DATA_DIR, 'cache.json');
-const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 function readJSON(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -42,50 +44,142 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
-// figures: { [handle]: { ...figureData } }
-const store = {
+const _json = {
   figures: readJSON(FIGURES_FILE, {}),
   cache:   readJSON(CACHE_FILE,   {}),
-
   saveFigures() { writeJSON(FIGURES_FILE, this.figures); },
   saveCache()   { writeJSON(CACHE_FILE,   this.cache);   },
+};
 
-  getFigure(handle) {
-    return this.figures[handle.toLowerCase()] || null;
+// ── PostgreSQL setup ──────────────────────────────────────────────────────────
+let pool = null;
+
+async function initDb() {
+  if (!process.env.DATABASE_URL) {
+    console.log('[store] No DATABASE_URL — using JSON files (data resets on redeploy)');
+    console.log('[store] Add a PostgreSQL database in Railway for persistent storage.');
+    return;
+  }
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  });
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS figures (
+      handle     TEXT PRIMARY KEY,
+      data       JSONB NOT NULL,
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS analysis_cache (
+      hash   TEXT PRIMARY KEY,
+      result JSONB NOT NULL,
+      ts     BIGINT NOT NULL
+    );
+  `);
+  console.log('[store] PostgreSQL connected ✓');
+}
+
+// ── Store API (all async) ─────────────────────────────────────────────────────
+const store = {
+  async getFigure(handle) {
+    const h = handle.toLowerCase();
+    if (pool) {
+      const r = await pool.query('SELECT data FROM figures WHERE handle=$1', [h]);
+      return r.rows[0]?.data || null;
+    }
+    return _json.figures[h] || null;
   },
-  listFigures() {
-    return Object.values(this.figures)
+
+  async listFigures() {
+    if (pool) {
+      const r = await pool.query('SELECT data FROM figures ORDER BY updated_at DESC');
+      return r.rows.map(row => row.data);
+    }
+    return Object.values(_json.figures)
       .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
   },
-  setFigure(handle, data) {
-    this.figures[handle.toLowerCase()] = { ...data, updated_at: new Date().toISOString() };
-    this.saveFigures();
-  },
-  updateFigure(handle, patch) {
+
+  async setFigure(handle, data) {
     const h = handle.toLowerCase();
-    this.figures[h] = { ...(this.figures[h] || {}), ...patch, updated_at: new Date().toISOString() };
-    this.saveFigures();
-  },
-  deleteFigure(handle) {
-    delete this.figures[handle.toLowerCase()];
-    this.saveFigures();
+    const d = { ...data, updated_at: new Date().toISOString() };
+    if (pool) {
+      await pool.query(
+        `INSERT INTO figures (handle, data, updated_at)
+         VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT (handle) DO UPDATE
+           SET data = EXCLUDED.data, updated_at = NOW()`,
+        [h, JSON.stringify(d)]
+      );
+    } else {
+      _json.figures[h] = d;
+      _json.saveFigures();
+    }
   },
 
-  getCache(hash) {
-    const entry = this.cache[hash];
-    if (!entry) return null;
-    if (Date.now() - entry.ts > CACHE_TTL_MS) { delete this.cache[hash]; return null; }
-    return entry.result;
-  },
-  setCache(hash, result) {
-    this.cache[hash] = { result, ts: Date.now() };
-    // Prune if over 500 entries
-    const keys = Object.keys(this.cache);
-    if (keys.length > 500) {
-      const now = Date.now();
-      keys.forEach(k => { if (now - this.cache[k].ts > CACHE_TTL_MS) delete this.cache[k]; });
+  async updateFigure(handle, patch) {
+    const h   = handle.toLowerCase();
+    const now = new Date().toISOString();
+    if (pool) {
+      // Merge patch into existing JSONB row (shallow merge at top level)
+      await pool.query(
+        `INSERT INTO figures (handle, data, updated_at)
+         VALUES ($1, $2::jsonb, NOW())
+         ON CONFLICT (handle) DO UPDATE
+           SET data = figures.data || $2::jsonb, updated_at = NOW()`,
+        [h, JSON.stringify({ ...patch, updated_at: now })]
+      );
+    } else {
+      _json.figures[h] = { ..._json.figures[h], ...patch, updated_at: now };
+      _json.saveFigures();
     }
-    this.saveCache();
+  },
+
+  async deleteFigure(handle) {
+    const h = handle.toLowerCase();
+    if (pool) {
+      await pool.query('DELETE FROM figures WHERE handle=$1', [h]);
+    } else {
+      delete _json.figures[h];
+      _json.saveFigures();
+    }
+  },
+
+  async getCache(hash) {
+    if (pool) {
+      const r = await pool.query(
+        'SELECT result, ts FROM analysis_cache WHERE hash=$1', [hash]
+      );
+      if (!r.rows[0]) return null;
+      if (Date.now() - Number(r.rows[0].ts) > CACHE_TTL_MS) {
+        await pool.query('DELETE FROM analysis_cache WHERE hash=$1', [hash]);
+        return null;
+      }
+      return r.rows[0].result;
+    }
+    const e = _json.cache[hash];
+    if (!e || Date.now() - e.ts > CACHE_TTL_MS) { delete _json.cache[hash]; return null; }
+    return e.result;
+  },
+
+  async setCache(hash, result) {
+    const ts = Date.now();
+    if (pool) {
+      await pool.query(
+        `INSERT INTO analysis_cache (hash, result, ts)
+         VALUES ($1, $2::jsonb, $3)
+         ON CONFLICT (hash) DO UPDATE
+           SET result = EXCLUDED.result, ts = EXCLUDED.ts`,
+        [hash, JSON.stringify(result), ts]
+      );
+    } else {
+      _json.cache[hash] = { result, ts };
+      const keys = Object.keys(_json.cache);
+      if (keys.length > 500) {
+        const now = Date.now();
+        keys.forEach(k => { if (now - _json.cache[k].ts > CACHE_TTL_MS) delete _json.cache[k]; });
+      }
+      _json.saveCache();
+    }
   },
 };
 
@@ -219,23 +313,29 @@ const adminLimit    = rateLimit({ windowMs: 60_000, max: 60 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
-// Root → redirect to admin
 app.get('/', (req, res) => res.redirect('/admin'));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '2.0.0', figures: Object.keys(store.figures).length, cards: CONTEXT_CARDS.length });
+app.get('/api/health', async (req, res) => {
+  const figCount = pool
+    ? (await pool.query('SELECT COUNT(*) FROM figures')).rows[0].count
+    : Object.keys(_json.figures).length;
+  res.json({
+    status: 'ok', version: '2.1.0',
+    figures: Number(figCount), cards: CONTEXT_CARDS.length,
+    storage: pool ? 'postgresql' : 'json-files',
+  });
 });
 
 // Analyze a post
 app.post('/api/analyze', analysisLimit, async (req, res) => {
-  const { text, imageUrls = [], handle = null, platform = 'unknown' } = req.body;
+  const { text, imageUrls = [], handle = null } = req.body;
   if (!text || text.trim().length < 10) return res.status(400).json({ error: 'text required' });
 
   const cacheKey = sha(text.slice(0, 600) + (handle || '') + String((imageUrls || []).length));
-  const cached = store.getCache(cacheKey);
+  const cached = await store.getCache(cacheKey);
   if (cached) return res.json(cached);
 
-  const figure = handle ? store.getFigure(handle) : null;
+  const figure = handle ? await store.getFigure(handle) : null;
 
   try {
     const ai = await claudeAnalyze(text, imageUrls, figure);
@@ -271,7 +371,7 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
       } : null,
     };
 
-    store.setCache(cacheKey, result);
+    await store.setCache(cacheKey, result);
     res.json(result);
   } catch (err) {
     console.error('[analyze]', err.message);
@@ -280,16 +380,16 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
 });
 
 // Get figure (public)
-app.get('/api/figures/:handle', (req, res) => {
-  const fig = store.getFigure(req.params.handle);
+app.get('/api/figures/:handle', async (req, res) => {
+  const fig = await store.getFigure(req.params.handle);
   if (!fig) return res.status(404).json({ error: 'Not found' });
   res.json(fig);
 });
 
 // ── Admin routes ───────────────────────────────────────────────────────────────
 
-app.get('/api/admin/figures', requireAdmin, adminLimit, (req, res) => {
-  res.json(store.listFigures());
+app.get('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
+  res.json(await store.listFigures());
 });
 
 app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
@@ -297,7 +397,7 @@ app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
   if (!name?.trim() || !handles?.length) return res.status(400).json({ error: 'name and handles required' });
   const primaryHandle = handles[0].replace(/^@/, '').toLowerCase();
 
-  store.setFigure(primaryHandle, {
+  await store.setFigure(primaryHandle, {
     handle: primaryHandle, name: name.trim(),
     role: null, jurisdiction: 'US',
     biography: {}, legal_proceedings: [], fact_check_discrepancies: [],
@@ -309,19 +409,19 @@ app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
   setImmediate(() => runResearch(name.trim(), handles, primaryHandle));
 });
 
-app.post('/api/admin/figures/:handle/research', requireAdmin, adminLimit, (req, res) => {
+app.post('/api/admin/figures/:handle/research', requireAdmin, adminLimit, async (req, res) => {
   const h = req.params.handle.replace(/^@/, '').toLowerCase();
-  const fig = store.getFigure(h);
+  const fig = await store.getFigure(h);
   if (!fig) return res.status(404).json({ error: 'Not found' });
-  store.updateFigure(h, { research_status: 'researching' });
+  await store.updateFigure(h, { research_status: 'researching' });
   res.json({ status: 'researching', handle: h });
   setImmediate(() => runResearch(fig.name, [h], h));
 });
 
-app.put('/api/admin/figures/:handle', requireAdmin, adminLimit, (req, res) => {
+app.put('/api/admin/figures/:handle', requireAdmin, adminLimit, async (req, res) => {
   const h = req.params.handle.replace(/^@/, '').toLowerCase();
   const { name, role, biography, legal_proceedings, fact_check_discrepancies, financial_ties, mirror_triggers, mirror_note } = req.body;
-  store.updateFigure(h, {
+  await store.updateFigure(h, {
     ...(name               != null && { name }),
     ...(role               != null && { role }),
     ...(biography          != null && { biography }),
@@ -332,16 +432,16 @@ app.put('/api/admin/figures/:handle', requireAdmin, adminLimit, (req, res) => {
     ...(mirror_note        != null && { mirror_note }),
     research_status: 'done',
   });
-  res.json(store.getFigure(h));
+  res.json(await store.getFigure(h));
 });
 
-app.delete('/api/admin/figures/:handle', requireAdmin, adminLimit, (req, res) => {
-  store.deleteFigure(req.params.handle);
+app.delete('/api/admin/figures/:handle', requireAdmin, adminLimit, async (req, res) => {
+  await store.deleteFigure(req.params.handle);
   res.json({ deleted: true });
 });
 
-app.get('/api/admin/figures/:handle/status', requireAdmin, adminLimit, (req, res) => {
-  const fig = store.getFigure(req.params.handle);
+app.get('/api/admin/figures/:handle/status', requireAdmin, adminLimit, async (req, res) => {
+  const fig = await store.getFigure(req.params.handle);
   if (!fig) return res.status(404).json({ error: 'Not found' });
   res.json({ handle: fig.handle, name: fig.name, status: fig.research_status, updated_at: fig.updated_at });
 });
@@ -352,28 +452,31 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 async function runResearch(name, handles, primaryHandle) {
   try {
     const data = await claudeResearch(name, handles);
-    store.updateFigure(primaryHandle, {
-      name:                     data.name                    || name,
-      role:                     data.role                    || null,
-      jurisdiction:             data.jurisdiction            || 'US',
-      biography:                data.biography               || {},
-      legal_proceedings:        data.legal_proceedings       || [],
+    await store.updateFigure(primaryHandle, {
+      name:                     data.name                     || name,
+      role:                     data.role                     || null,
+      jurisdiction:             data.jurisdiction             || 'US',
+      biography:                data.biography                || {},
+      legal_proceedings:        data.legal_proceedings        || [],
       fact_check_discrepancies: data.fact_check_discrepancies || [],
-      financial_ties:           data.financial_ties          || [],
-      mirror_triggers:          data.mirror_triggers         || [],
-      mirror_note:              data.mirror_note             || null,
+      financial_ties:           data.financial_ties           || [],
+      mirror_triggers:          data.mirror_triggers          || [],
+      mirror_note:              data.mirror_note              || null,
       research_status: 'done',
     });
     console.log(`[research] ✓ ${name} (@${primaryHandle})`);
   } catch (err) {
     console.error(`[research] ✗ ${name}:`, err.message);
-    store.updateFigure(primaryHandle, { research_status: 'error' });
+    await store.updateFigure(primaryHandle, { research_status: 'error' });
   }
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\nGlassBox API  →  http://localhost:${PORT}`);
-  console.log(`Admin         →  http://localhost:${PORT}/admin`);
-  console.log(`Figures: ${Object.keys(store.figures).length}  |  Cards: ${CONTEXT_CARDS.length}\n`);
-});
+(async () => {
+  await initDb();
+  app.listen(PORT, () => {
+    console.log(`\nGlassBox API  →  http://localhost:${PORT}`);
+    console.log(`Admin         →  http://localhost:${PORT}/admin`);
+    console.log(`Storage: ${pool ? 'PostgreSQL' : 'JSON files'}\n`);
+  });
+})();
