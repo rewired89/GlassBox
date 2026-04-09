@@ -487,6 +487,17 @@
   <!-- Settings Panel -->
   <div class="panel" id="panel-settings" role="tabpanel">
     <div class="settings-group">
+      <div class="settings-group__title">API Connection</div>
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px">
+        <div class="settings-row__label">GlassBox API URL</div>
+        <div class="settings-row__desc">Your deployed backend (e.g. https://glassbox.railway.app)</div>
+        <input type="url" id="setting-api-url" placeholder="https://your-api.railway.app"
+          style="width:100%;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:12px;box-sizing:border-box">
+        <div id="api-status" style="font-size:11px;color:var(--text-muted)"></div>
+      </div>
+    </div>
+
+    <div class="settings-group">
       <div class="settings-group__title">Detection</div>
 
       <div class="settings-row">
@@ -567,7 +578,7 @@
   </div>
 
   <footer class="footer">
-    GlassBox v0.1.0 &bull; All data stored locally
+    GlassBox v2.0.0 &bull; AI-powered
   </footer>
 
   <script src="dashboard.js"></script>

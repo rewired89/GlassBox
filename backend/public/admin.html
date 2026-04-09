@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlassBox Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1e2028;
+      --surface2: #16181c;
+      --border:   #2f3241;
+      --text:     #e7e9ea;
+      --muted:    #9ca3af;
+      --dim:      #4b5563;
+      --accent:   #1d9bf0;
+      --green:    #22c55e;
+      --amber:    #f59e0b;
+      --red:      #ef4444;
+      --purple:   #a855f7;
+      --teal:     #06b6d4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ─── Auth overlay ─── */
+    #auth-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      width: 360px;
+      text-align: center;
+    }
+    .auth-box h1 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .auth-box p  { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .auth-input {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .auth-input:focus { outline: none; border-color: var(--accent); }
+    .auth-error { color: var(--red); font-size: 12px; margin-top: 8px; }
+
+    /* ─── Layout ─── */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header-left  { display: flex; align-items: center; gap: 12px; }
+    .logo-icon    { width: 32px; height: 32px; background: linear-gradient(135deg, #1d9bf0, #a855f7); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text h1 { font-size: 18px; font-weight: 800; }
+    .logo-text p  { font-size: 11px; color: var(--muted); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .status-dot   { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .status-txt   { font-size: 12px; color: var(--muted); }
+
+    .main  { max-width: 1100px; margin: 0 auto; padding: 28px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .topbar h2 { font-size: 18px; font-weight: 700; }
+    .topbar-right { display: flex; gap: 10px; }
+
+    /* ─── Buttons ─── */
+    .btn {
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn--primary  { background: var(--accent);  color: #fff; }
+    .btn--danger   { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .btn--ghost    { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+    .btn--amber    { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .btn--sm       { padding: 4px 10px; font-size: 12px; }
+
+    /* ─── Table ─── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border-bottom: 1px solid var(--border); background: var(--surface2); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    td { padding: 12px 14px; vertical-align: middle; }
+    .td-name  { font-weight: 600; }
+    .td-handle{ color: var(--accent); font-size: 13px; }
+    .td-role  { color: var(--muted); font-size: 12px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .td-actions { display: flex; gap: 6px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge--done       { background: rgba(34,197,94,0.1);   color: var(--green);  }
+    .badge--pending    { background: rgba(107,114,128,0.12); color: var(--muted);  }
+    .badge--researching{ background: rgba(245,158,11,0.12); color: var(--amber);  }
+    .badge--error      { background: rgba(239,68,68,0.12);  color: var(--red);    }
+
+    /* ─── Modal ─── */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7); z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-bg--open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      width: 540px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+      padding: 28px;
+    }
+    .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .modal p  { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+    .modal-close { float: right; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
+
+    .form-row { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+    .form-input, .form-textarea {
+      width: 100%; padding: 10px 12px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; font-size: 13px;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+    .form-hint { font-size: 11px; color: var(--dim); margin-top: 4px; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+
+    /* ─── Detail panel ─── */
+    .detail-panel {
+      display: none; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; margin-top: 16px; padding: 20px;
+    }
+    .detail-panel--open { display: block; }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .detail-item { background: var(--surface2); border-radius: 8px; padding: 12px; margin-bottom: 8px; font-size: 12px; }
+    .detail-item-title { font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .detail-item-body  { color: var(--muted); line-height: 1.5; }
+    .detail-item-link  { color: var(--accent); font-size: 11px; text-decoration: none; }
+    .detail-item-link:hover { text-decoration: underline; }
+
+    /* ─── Spinner ─── */
+    .spinner {
+      width: 14px; height: 14px; border: 2px solid var(--border);
+      border-top-color: var(--amber); border-radius: 50%;
+      animation: spin 0.7s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── Empty ─── */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+    .empty h3   { color: var(--text); font-size: 16px; margin-bottom: 6px; }
+    .empty p    { font-size: 13px; }
+
+    /* ─── Toast ─── */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; font-weight: 600;
+      opacity: 0; transition: opacity 0.2s;
+      pointer-events: none; z-index: 999;
+    }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Auth Overlay -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div style="font-size:36px;margin-bottom:12px">🔍</div>
+    <h1>GlassBox Admin</h1>
+    <p>Enter your admin key to continue</p>
+    <input class="auth-input" id="auth-input" type="password" placeholder="Admin key" autocomplete="current-password">
+    <button class="btn btn--primary" style="width:100%;padding:10px" onclick="doAuth()">Unlock Dashboard</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app" style="display:none">
+  <header class="header">
+    <div class="header-left">
+      <div class="logo-icon">🔍</div>
+      <div class="logo-text">
+        <h1>GlassBox</h1>
+        <p>Admin Dashboard</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-dot" id="status-dot"></div>
+      <span class="status-txt" id="status-txt">Connecting…</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="topbar">
+      <h2>Public Figure Database</h2>
+      <div class="topbar-right">
+        <button class="btn btn--ghost btn--sm" onclick="loadFigures()">↻ Refresh</button>
+        <button class="btn btn--primary" onclick="openAddModal()">+ Add Figure</button>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <div class="empty"><div class="empty-icon">🏛️</div><h3>Loading…</h3></div>
+    </div>
+
+    <!-- Detail panel (shown below table when a row is selected) -->
+    <div class="detail-panel" id="detail-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h3 id="detail-name" style="font-size:16px;font-weight:700"></h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn--amber btn--sm" id="detail-reresearch" onclick="reresearch()">↻ Re-research</button>
+          <button class="btn btn--ghost btn--sm" onclick="closeDetail()">✕ Close</button>
+        </div>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Figure Modal -->
+<div class="modal-bg" id="add-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddModal()">✕</button>
+    <h2>Add Public Figure</h2>
+    <p>GlassBox will research their public records using AI and build an accountability card automatically. You can edit the results after.</p>
+
+    <div class="form-row">
+      <label class="form-label">Full name *</label>
+      <input class="form-input" id="add-name" placeholder="e.g. Donald Trump" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Social media handles *</label>
+      <input class="form-input" id="add-handles" placeholder="e.g. realdonaldtrump, POTUS45 (comma-separated)">
+      <div class="form-hint">Include all known handles — the extension will match any of them.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn--ghost" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn--primary" id="add-btn" onclick="addFigure()">Research & Add</button>
+    </div>
+    <div id="add-status" style="margin-top:12px;font-size:13px;color:var(--amber)"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let ADMIN_KEY = '';
+  let selectedHandle = null;
+  let pollTimer = null;
+
+  // ── Auth ────────────────────────────────────────────────────────────────────
+  // Check if key stored in session
+  const storedKey = sessionStorage.getItem('gb_admin_key');
+  if (storedKey) { ADMIN_KEY = storedKey; bootApp(); }
+
+  document.getElementById('auth-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAuth();
+  });
+
+  async function doAuth() {
+    const key = document.getElementById('auth-input').value.trim();
+    if (!key) return;
+    // Verify key works
+    try {
+      const r = await fetch('/api/admin/figures', { headers: { 'x-admin-key': key } });
+      if (r.status === 401) {
+        document.getElementById('auth-error').textContent = 'Invalid key — try again';
+        return;
+      }
+      ADMIN_KEY = key;
+      sessionStorage.setItem('gb_admin_key', key);
+      bootApp();
+    } catch {
+      document.getElementById('auth-error').textContent = 'Could not reach API — is the server running?';
+    }
+  }
+
+  function bootApp() {
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    checkHealth();
+    loadFigures();
+    setInterval(checkHealth, 30_000);
+  }
+
+  // ── Health ──────────────────────────────────────────────────────────────────
+  async function checkHealth() {
+    try {
+      const r = await fetch('/api/health');
+      const d = await r.json();
+      document.getElementById('status-dot').style.background = 'var(--green)';
+      document.getElementById('status-txt').textContent = `Online · ${d.figures} figures · ${d.cards} cards`;
+    } catch {
+      document.getElementById('status-dot').style.background = 'var(--red)';
+      document.getElementById('status-txt').textContent = 'API offline';
+    }
+  }
+
+  // ── Load figures ─────────────────────────────────────────────────────────────
+  async function loadFigures() {
+    const wrap = document.getElementById('table-wrap');
+    try {
+      const r = await fetch('/api/admin/figures', { headers: { 'x-admin-key': ADMIN_KEY } });
+      const figures = await r.json();
+
+      if (!figures.length) {
+        wrap.innerHTML = `<div class="empty"><div class="empty-icon">🏛️</div><h3>No figures yet</h3><p>Click "Add Figure" to research someone's public records.</p></div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Name</th><th>Handle</th><th>Role</th><th>Status</th>
+            <th>Legal</th><th>Fact Checks</th><th>Updated</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${figures.map(f => `
+              <tr data-handle="${f.handle}" onclick="selectFigure('${f.handle}')">
+                <td class="td-name">${esc(f.name)}</td>
+                <td class="td-handle">@${esc(f.handle)}</td>
+                <td class="td-role">${esc(f.role || '—')}</td>
+                <td>${statusBadge(f.research_status)}</td>
+                <td><span style="color:var(--muted);font-size:12px">${f.legal_proceedings?.length || 0}</span></td>
+                <td><span style="color:var(--muted);font-size:12px">${f.fact_check_discrepancies?.length || 0}</span></td>
+                <td style="color:var(--muted);font-size:12px">${ago(f.updated_at)}</td>
+                <td class="td-actions" onclick="event.stopPropagation()">
+                  <button class="btn btn--amber btn--sm" onclick="reresearchHandle('${f.handle}')">↻</button>
+                  <button class="btn btn--danger btn--sm" onclick="deleteFigure('${f.handle}')">✕</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+
+      // If a research-in-progress item exists, poll
+      const researching = figures.some(f => f.research_status === 'researching');
+      if (researching && !pollTimer) {
+        pollTimer = setInterval(() => { loadFigures(); }, 3000);
+      } else if (!researching && pollTimer) {
+        clearInterval(pollTimer); pollTimer = null;
+      }
+    } catch (e) {
+      wrap.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><h3>Error loading figures</h3><p>${esc(e.message)}</p></div>`;
+    }
+  }
+
+  // ── Figure detail ─────────────────────────────────────────────────────────────
+  async function selectFigure(handle) {
+    selectedHandle = handle;
+    // Highlight row
+    document.querySelectorAll('tbody tr').forEach(r => r.style.background = '');
+    const row = document.querySelector(`tr[data-handle="${handle}"]`);
+    if (row) row.style.background = 'rgba(29,155,240,0.07)';
+
+    const panel = document.getElementById('detail-panel');
+    panel.classList.add('detail-panel--open');
+    document.getElementById('detail-content').innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+
+    try {
+      const r   = await fetch(`/api/figures/${handle}`);
+      const fig = await r.json();
+      document.getElementById('detail-name').textContent = `${fig.name} (@${fig.handle})`;
+
+      let html = '';
+
+      // Biography
+      if (fig.biography?.migration_note || fig.biography?.birth_place) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title">🧬 Biography</div>
+          <div class="detail-item">
+            <div class="detail-item-title">${esc(fig.biography.birth_place || 'Unknown birthplace')} · Born ${fig.biography.birth_year || '?'}</div>
+            <div class="detail-item-body">${esc(fig.biography.migration_note || '')}
+              ${fig.biography.is_immigrant ? ' <strong style="color:var(--teal)">Immigrant</strong>' : ''}
+              ${fig.biography.parents_immigrant ? ' · <strong style="color:var(--teal)">Parents immigrants</strong>' : ''}
+            </div>
+            ${fig.biography.source_url ? `<a class="detail-item-link" href="${esc(fig.biography.source_url)}" target="_blank">📄 Source</a>` : ''}
+          </div>
+        </div>`;
+      }
+
+      if (fig.mirror_note) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title">🪞 Mirror Note</div>
+          <div class="detail-item"><div class="detail-item-body">${esc(fig.mirror_note)}</div>
+          <div style="margin-top:6px;font-size:11px;color:var(--dim)">Triggers: ${(fig.mirror_triggers||[]).map(t => `<code style="background:var(--bg);padding:1px 5px;border-radius:4px;font-size:10px">${esc(t)}</code>`).join(' ')}</div>
+          </div>
+        </div>`;
+      }
+
+      if (fig.legal_proceedings?.length) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title">⚖️ Legal Proceedings (${fig.legal_proceedings.length})</div>
+          ${fig.legal_proceedings.map(p => `
+            <div class="detail-item">
+              <div class="detail-item-title"><span class="badge badge--${p.status}">${p.status}</span> ${esc(p.case)}</div>
+              <div class="detail-item-body">${esc(p.summary)}</div>
+              ${p.source_url ? `<a class="detail-item-link" href="${esc(p.source_url)}" target="_blank">📄 ${esc(p.source)}</a>` : ''}
+            </div>`).join('')}
+        </div>`;
+      }
+
+      if (fig.fact_check_discrepancies?.length) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title">🔎 Fact-Check Discrepancies (${fig.fact_check_discrepancies.length})</div>
+          ${fig.fact_check_discrepancies.map(f => `
+            <div class="detail-item">
+              <div class="detail-item-title">"${esc(f.claim)}"</div>
+              <div class="detail-item-body">↳ ${esc(f.finding)}</div>
+              ${f.source_url ? `<a class="detail-item-link" href="${esc(f.source_url)}" target="_blank">📄 ${esc(f.source)}</a>` : ''}
+            </div>`).join('')}
+        </div>`;
+      }
+
+      if (fig.financial_ties?.length) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title">💰 Financial Ties (${fig.financial_ties.length})</div>
+          ${fig.financial_ties.map(f => `
+            <div class="detail-item">
+              <div class="detail-item-title">${esc(f.entity)}${f.amount ? ` — ${esc(f.amount)}` : ''}</div>
+              <div class="detail-item-body">${esc(f.relationship)}<br><span style="color:var(--dim)">${esc(f.relevance || '')}</span></div>
+              ${f.source_url ? `<a class="detail-item-link" href="${esc(f.source_url)}" target="_blank">📄 ${esc(f.source)}</a>` : ''}
+            </div>`).join('')}
+        </div>`;
+      }
+
+      if (!html) html = `<div style="color:var(--muted);font-size:13px">No detailed records on file yet. Click ↻ Re-research to populate.</div>`;
+      document.getElementById('detail-content').innerHTML = html;
+
+    } catch (e) {
+      document.getElementById('detail-content').innerHTML = `<span style="color:var(--red)">Error: ${esc(e.message)}</span>`;
+    }
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-panel').classList.remove('detail-panel--open');
+    document.querySelectorAll('tbody tr').forEach(r => r.style.background = '');
+    selectedHandle = null;
+  }
+
+  // ── Add figure ─────────────────────────────────────────────────────────────────
+  function openAddModal() {
+    document.getElementById('add-modal').classList.add('modal-bg--open');
+    document.getElementById('add-name').focus();
+  }
+  function closeAddModal() {
+    document.getElementById('add-modal').classList.remove('modal-bg--open');
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-handles').value = '';
+    document.getElementById('add-status').textContent = '';
+    document.getElementById('add-btn').disabled = false;
+    document.getElementById('add-btn').textContent = 'Research & Add';
+  }
+
+  async function addFigure() {
+    const name    = document.getElementById('add-name').value.trim();
+    const handles = document.getElementById('add-handles').value.split(',').map(h => h.trim()).filter(Boolean);
+    if (!name || !handles.length) {
+      document.getElementById('add-status').textContent = 'Name and at least one handle are required.';
+      document.getElementById('add-status').style.color = 'var(--red)';
+      return;
+    }
+    document.getElementById('add-btn').disabled = true;
+    document.getElementById('add-btn').innerHTML = '<span class="spinner"></span> Researching…';
+    document.getElementById('add-status').style.color = 'var(--amber)';
+    document.getElementById('add-status').textContent = 'Research started — this usually takes 10–20 seconds…';
+
+    try {
+      const r = await fetch('/api/admin/figures', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-admin-key': ADMIN_KEY },
+        body: JSON.stringify({ name, handles }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || 'Unknown error');
+
+      closeAddModal();
+      toast(`Research started for ${name} — refreshing…`);
+      await loadFigures();
+
+      // Auto-poll until done
+      if (!pollTimer) {
+        pollTimer = setInterval(() => loadFigures(), 3000);
+      }
+    } catch (e) {
+      document.getElementById('add-status').textContent = 'Error: ' + e.message;
+      document.getElementById('add-status').style.color = 'var(--red)';
+      document.getElementById('add-btn').disabled = false;
+      document.getElementById('add-btn').textContent = 'Research & Add';
+    }
+  }
+
+  // ── Re-research ──────────────────────────────────────────────────────────────
+  async function reresearch() { if (selectedHandle) reresearchHandle(selectedHandle); }
+
+  async function reresearchHandle(handle) {
+    await fetch(`/api/admin/figures/${handle}/research`, {
+      method: 'POST',
+      headers: { 'x-admin-key': ADMIN_KEY },
+    });
+    toast(`Re-researching @${handle}…`);
+    await loadFigures();
+    if (!pollTimer) pollTimer = setInterval(() => loadFigures(), 3000);
+  }
+
+  // ── Delete ───────────────────────────────────────────────────────────────────
+  async function deleteFigure(handle) {
+    if (!confirm(`Delete @${handle} from the database?`)) return;
+    await fetch(`/api/admin/figures/${handle}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-key': ADMIN_KEY },
+    });
+    toast(`@${handle} deleted`);
+    if (selectedHandle === handle) closeDetail();
+    loadFigures();
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function statusBadge(s) {
+    const icons = { done: '✓', pending: '·', researching: '⟳', error: '✗' };
+    return `<span class="badge badge--${s}">${icons[s] || '·'} ${s}</span>`;
+  }
+
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function ago(ts) {
+    if (!ts) return '—';
+    const d = (Date.now() - new Date(ts + ' UTC').getTime()) / 1000;
+    if (d < 60)   return 'just now';
+    if (d < 3600) return `${Math.floor(d/60)}m ago`;
+    if (d < 86400)return `${Math.floor(d/3600)}h ago`;
+    return `${Math.floor(d/86400)}d ago`;
+  }
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Close modal on background click
+  document.getElementById('add-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('add-modal')) closeAddModal();
+  });
+
+  // Enter to auth
+  document.getElementById('auth-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAuth();
+  });
+</script>
+</body>
+</html>
