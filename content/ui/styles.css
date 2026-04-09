@@ -873,6 +873,49 @@
   text-decoration: underline;
 }
 
+/* Resonance badge inside accountability / mirror card trigger */
+.gb-acct-card__resonance {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  border: 1px solid;
+  white-space: nowrap;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+/* Mirror section inside accountability card */
+.gb-acct-card__section--mirror {
+  background: rgba(6, 182, 212, 0.04);
+  border: 1px solid rgba(6, 182, 212, 0.18);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.gb-acct-card__mirror-note {
+  font-size: 12px;
+  color: #e2e8f0;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.gb-acct-card__mirror-detail {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-bottom: 5px;
+  font-style: italic;
+}
+
+/* Mirror card variant — teal/cyan left border instead of purple */
+.gb-mirror-card {
+  border-left: 3px solid #06b6d4;
+  border-color: rgba(6, 182, 212, 0.3);
+  border-left-color: #06b6d4;
+}
+
 /* ─── Add Context Button ──────────────────────────────────────────────────── */
 
 .gb-add-context {

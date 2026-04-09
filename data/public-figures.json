@@ -314,6 +314,825 @@
 
   ],
 
+  "entity_index": [
+    {
+      "id": "elonmusk",
+      "name": "Elon Musk",
+      "handles": ["elonmusk"],
+      "role": "CEO, Tesla & SpaceX; Owner, X (formerly Twitter)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Pretoria, South Africa",
+        "birth_year": 1971,
+        "is_immigrant": true,
+        "parents_immigrant": false,
+        "migration_note": "Born in Pretoria, South Africa. Moved to Canada at age 17 (1989). Moved to the United States in 1995 on a student visa. Became a naturalized US citizen in 2002.",
+        "source_url": "https://en.wikipedia.org/wiki/Elon_Musk"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "h1b", "h-1b", "illegal", "border", "deport", "visa", "open borders", "legal immigration"],
+      "mirror_note": "Public records indicate Elon Musk is a South African-born immigrant who moved to Canada in 1989 and to the United States in 1995, later becoming a naturalized US citizen."
+    },
+    {
+      "id": "barackobama",
+      "name": "Barack Obama",
+      "handles": ["barackobama"],
+      "role": "44th President of the United States (2009–2017)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Honolulu, Hawaii, USA",
+        "birth_year": 1961,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Honolulu, Hawaii. Father Barack Obama Sr. was a Kenyan national who came to the US on a student scholarship to the University of Hawaii. Mother Ann Dunham was American.",
+        "source_url": "https://en.wikipedia.org/wiki/Barack_Obama"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "realdonaldtrump",
+      "name": "Donald J. Trump",
+      "handles": ["realdonaldtrump"],
+      "role": "45th and 47th President of the United States",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Queens, New York City, USA",
+        "birth_year": 1946,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Queens, New York. Mother Mary Anne MacLeod was born in Tong, Isle of Lewis, Scotland, and immigrated to the United States in 1930. Paternal grandfather Friedrich Trump was born in Kallstadt, Kingdom of Bavaria (now Germany) and immigrated to the United States in 1902.",
+        "source_url": "https://en.wikipedia.org/wiki/Donald_Trump"
+      },
+      "mirror_triggers": ["immigrant", "immigration", "illegal alien", "illegal immigrant", "open borders", "deport", "border wall", "anchor baby", "chain migration"],
+      "mirror_note": "Public records indicate Donald Trump's mother Mary Anne MacLeod was a Scottish immigrant (born Tong, Isle of Lewis, Scotland; arrived US 1930), and his paternal grandfather Friedrich Trump was a German immigrant (born Kallstadt, Germany; arrived US 1902)."
+    },
+    {
+      "id": "joebiden",
+      "name": "Joe Biden",
+      "handles": ["joebiden"],
+      "role": "46th President of the United States (2021–2025)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Scranton, Pennsylvania, USA",
+        "birth_year": 1942,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Scranton, Pennsylvania. Irish-American heritage — ancestors immigrated from County Mayo and County Louth, Ireland in the 19th century.",
+        "source_url": "https://en.wikipedia.org/wiki/Joe_Biden"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "kamalaharris",
+      "name": "Kamala Harris",
+      "handles": ["kamalaharris"],
+      "role": "49th Vice President of the United States (2021–2025)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Oakland, California, USA",
+        "birth_year": 1964,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Oakland, California. Mother Shyamala Gopalan (1938–2009) was born in India and immigrated to the US to attend UC Berkeley in 1958. Father Donald J. Harris was born in Jamaica and immigrated to the US for graduate study at UC Berkeley in 1961.",
+        "source_url": "https://en.wikipedia.org/wiki/Kamala_Harris"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "deport", "anchor baby", "birth tourism", "illegal alien"],
+      "mirror_note": "Public records indicate Kamala Harris is the daughter of two immigrants: her mother Shyamala Gopalan immigrated from India (1958) and her father Donald Harris immigrated from Jamaica (1961), both to attend UC Berkeley."
+    },
+    {
+      "id": "aoc",
+      "name": "Alexandria Ocasio-Cortez",
+      "handles": ["aoc"],
+      "role": "US Representative, NY-14 (2019–present)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Bronx, New York City, USA",
+        "birth_year": 1989,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in the Bronx, New York. Father Sergio Ocasio-Roman was born in the Bronx to Puerto Rican parents. Mother Blanca Ocasio-Cortez migrated from Puerto Rico to the Bronx.",
+        "source_url": "https://en.wikipedia.org/wiki/Alexandria_Ocasio-Cortez"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "berniesanders",
+      "name": "Bernie Sanders",
+      "handles": ["berniesanders"],
+      "role": "US Senator, Vermont (1991–present)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Brooklyn, New York City, USA",
+        "birth_year": 1941,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Brooklyn, New York. Father Elias Ben Yehuda Sanders was born in Słopnice, Galicia (then Austria-Hungary, now Poland), and emigrated to the United States in the 1920s to escape poverty and antisemitism in Europe.",
+        "source_url": "https://en.wikipedia.org/wiki/Bernie_Sanders"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "refugee"],
+      "mirror_note": "Public records indicate Bernie Sanders' father Elias Ben Yehuda Sanders was a Polish Jewish immigrant who emigrated to the United States from Galicia (now Poland) in the 1920s."
+    },
+    {
+      "id": "hillaryclinton",
+      "name": "Hillary Clinton",
+      "handles": ["hillaryclinton"],
+      "role": "US Secretary of State (2009–2013); US Senator, New York (2001–2009)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Chicago, Illinois, USA",
+        "birth_year": 1947,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Chicago, Illinois. Welsh and English ancestry.",
+        "source_url": "https://en.wikipedia.org/wiki/Hillary_Clinton"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "tedcruz",
+      "name": "Ted Cruz",
+      "handles": ["tedcruz"],
+      "role": "US Senator, Texas (2013–present); US Secretary of State nominee",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Calgary, Alberta, Canada",
+        "birth_year": 1970,
+        "is_immigrant": true,
+        "parents_immigrant": true,
+        "migration_note": "Born in Calgary, Canada. Father Rafael Eduardo Cruz was born in Cuba and immigrated to the United States via Canada in 1957. Cruz held dual US-Canadian citizenship and renounced his Canadian citizenship in 2014.",
+        "source_url": "https://en.wikipedia.org/wiki/Ted_Cruz"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "illegal alien", "open borders", "deport", "border wall", "legal immigration", "chain migration", "asylum"],
+      "mirror_note": "Public records indicate Ted Cruz was born in Calgary, Canada, held dual US-Canadian citizenship (renounced Canadian in 2014), and his father Rafael Cruz is a Cuban immigrant who came to the US in 1957."
+    },
+    {
+      "id": "marcorubioff",
+      "name": "Marco Rubio",
+      "handles": ["marcorubioff"],
+      "role": "US Secretary of State (2025–present); former US Senator, Florida",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Miami, Florida, USA",
+        "birth_year": 1971,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Miami, Florida. Parents Mario Rubio and Oria Garcia emigrated from Cuba to the United States in May 1956. Rubio is a second-generation Cuban-American.",
+        "source_url": "https://en.wikipedia.org/wiki/Marco_Rubio"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "illegal alien", "open borders", "deport", "border wall", "asylum", "chain migration"],
+      "mirror_note": "Public records indicate Marco Rubio is the son of Cuban immigrants — his parents Mario Rubio and Oria Garcia came to the United States from Cuba in 1956."
+    },
+    {
+      "id": "nikkihaley",
+      "name": "Nikki Haley",
+      "handles": ["nikkihaley"],
+      "role": "Former UN Ambassador (2017–2018); former Governor of South Carolina",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Bamberg, South Carolina, USA",
+        "birth_year": 1972,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Bamberg, South Carolina. Parents Ajit Singh Randhawa and Raj Kaur Randhawa are Sikh immigrants from Amritsar, Punjab, India.",
+        "source_url": "https://en.wikipedia.org/wiki/Nikki_Haley"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "illegal alien", "open borders", "deport", "h1b", "visa", "legal immigration"],
+      "mirror_note": "Public records indicate Nikki Haley was born to Sikh Indian immigrants — her parents Ajit Singh and Raj Kaur Randhawa came to the United States from Amritsar, Punjab, India."
+    },
+    {
+      "id": "vivekgramaswamy",
+      "name": "Vivek Ramaswamy",
+      "handles": ["vivekgramaswamy"],
+      "role": "Former co-head, DOGE (2024–2025); former presidential candidate 2024",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Cincinnati, Ohio, USA",
+        "birth_year": 1985,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Cincinnati, Ohio. Parents V.G. Ramaswamy and Geetha immigrated to the United States from Trichur (Thrissur), Kerala, India.",
+        "source_url": "https://en.wikipedia.org/wiki/Vivek_Ramaswamy"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "h1b", "h-1b", "diversity visa", "illegal", "deport", "open borders"],
+      "mirror_note": "Public records indicate Vivek Ramaswamy was born in Cincinnati, Ohio to Indian immigrant parents who came to the United States from Kerala, India. He is a second-generation Indian-American."
+    },
+    {
+      "id": "repmtg",
+      "name": "Marjorie Taylor Greene",
+      "handles": ["repmtg"],
+      "role": "US Representative, GA-14 (2021–present)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Milledgeville, Georgia, USA",
+        "birth_year": 1974,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Milledgeville, Georgia.",
+        "source_url": "https://en.wikipedia.org/wiki/Marjorie_Taylor_Greene"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "mattgaetz",
+      "name": "Matt Gaetz",
+      "handles": ["mattgaetz"],
+      "role": "Former US Representative, FL-1 (2017–2024)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Hollywood, Florida, USA",
+        "birth_year": 1982,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Hollywood, Florida.",
+        "source_url": "https://en.wikipedia.org/wiki/Matt_Gaetz"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "benshapiro",
+      "name": "Ben Shapiro",
+      "handles": ["benshapiro"],
+      "role": "Conservative commentator; co-founder, The Daily Wire",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Burbank, California, USA",
+        "birth_year": 1984,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Burbank, California. Jewish-American. Holds dual US-Israeli citizenship.",
+        "source_url": "https://en.wikipedia.org/wiki/Ben_Shapiro"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "jordanbpeterson",
+      "name": "Jordan Peterson",
+      "handles": ["jordanbpeterson"],
+      "role": "Canadian psychologist and author; public intellectual",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Fairview, Alberta, Canada",
+        "birth_year": 1962,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Fairview, Alberta, Canada.",
+        "source_url": "https://en.wikipedia.org/wiki/Jordan_Peterson"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "tuckercarlson",
+      "name": "Tucker Carlson",
+      "handles": ["tuckercarlson"],
+      "role": "Conservative media host; former Fox News anchor",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "San Francisco, California, USA",
+        "birth_year": 1969,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in San Francisco, California.",
+        "source_url": "https://en.wikipedia.org/wiki/Tucker_Carlson"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "joerogan",
+      "name": "Joe Rogan",
+      "handles": ["joerogan"],
+      "role": "Podcast host, The Joe Rogan Experience; UFC commentator",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Newark, New Jersey, USA",
+        "birth_year": 1967,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Newark, New Jersey.",
+        "source_url": "https://en.wikipedia.org/wiki/Joe_Rogan"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "jeffbezos",
+      "name": "Jeff Bezos",
+      "handles": ["jeffbezos"],
+      "role": "Founder, Amazon; owner, Blue Origin and Washington Post",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Albuquerque, New Mexico, USA",
+        "birth_year": 1964,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Albuquerque, New Mexico. His surname Bezos comes from his Cuban immigrant stepfather Miguel Bezos, who came to the United States as part of Operation Peter Pan (Pedro Pan) — a mass airlift of Cuban children 1960–1962. Miguel Bezos adopted Jeff at age 4.",
+        "source_url": "https://en.wikipedia.org/wiki/Jeff_Bezos"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "cuban", "open borders", "deport", "asylum"],
+      "mirror_note": "Public records indicate Jeff Bezos' last name and legal identity come from his Cuban immigrant stepfather Miguel Bezos, who arrived in the United States as an unaccompanied Cuban child refugee via Operation Peter Pan."
+    },
+    {
+      "id": "billgates",
+      "name": "Bill Gates",
+      "handles": ["billgates"],
+      "role": "Co-founder, Microsoft; philanthropist, Gates Foundation",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Seattle, Washington, USA",
+        "birth_year": 1955,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Seattle, Washington.",
+        "source_url": "https://en.wikipedia.org/wiki/Bill_Gates"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "sundarpichai",
+      "name": "Sundar Pichai",
+      "handles": ["sundarpichai"],
+      "role": "CEO, Google and Alphabet Inc.",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Madurai, Tamil Nadu, India",
+        "birth_year": 1972,
+        "is_immigrant": true,
+        "parents_immigrant": false,
+        "migration_note": "Born in Madurai, Tamil Nadu, India. Came to the United States in 1993 on a student visa for an MS at Stanford University. Later received an MBA from Wharton. Became a naturalized US citizen.",
+        "source_url": "https://en.wikipedia.org/wiki/Sundar_Pichai"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "h1b", "h-1b", "visa", "legal immigration", "tech workers", "foreign workers"],
+      "mirror_note": "Public records indicate Sundar Pichai was born in Madurai, India and immigrated to the United States in 1993 on a student visa, later becoming a naturalized US citizen."
+    },
+    {
+      "id": "tim_cook",
+      "name": "Tim Cook",
+      "handles": ["tim_cook"],
+      "role": "CEO, Apple Inc.",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Robertsdale, Alabama, USA",
+        "birth_year": 1960,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Robertsdale, Alabama.",
+        "source_url": "https://en.wikipedia.org/wiki/Tim_Cook"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "markzuckerberg",
+      "name": "Mark Zuckerberg",
+      "handles": ["markzuckerberg"],
+      "role": "Co-founder and CEO, Meta (Facebook, Instagram, WhatsApp)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "White Plains, New York, USA",
+        "birth_year": 1984,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in White Plains, New York. Jewish-American. Paternal great-grandparents immigrated from Eastern Europe.",
+        "source_url": "https://en.wikipedia.org/wiki/Mark_Zuckerberg"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "justintrudeau",
+      "name": "Justin Trudeau",
+      "handles": ["justintrudeau"],
+      "role": "Former Prime Minister of Canada (2015–2025)",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Ottawa, Ontario, Canada",
+        "birth_year": 1971,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Ottawa, Ontario.",
+        "source_url": "https://en.wikipedia.org/wiki/Justin_Trudeau"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "ppollievre",
+      "name": "Pierre Poilievre",
+      "handles": ["ppollievre"],
+      "role": "Leader, Conservative Party of Canada (2022–present)",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Calgary, Alberta, Canada",
+        "birth_year": 1979,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Calgary, Alberta. Adopted as an infant by parents of French-Canadian and British descent.",
+        "source_url": "https://en.wikipedia.org/wiki/Pierre_Poilievre"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "jagmeetsingh",
+      "name": "Jagmeet Singh",
+      "handles": ["jagmeetsingh"],
+      "role": "Leader, New Democratic Party of Canada (2017–present)",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Scarborough, Ontario, Canada",
+        "birth_year": 1979,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Scarborough, Ontario. Parents are Punjabi Sikh immigrants from Tarn Taran district, Punjab, India.",
+        "source_url": "https://en.wikipedia.org/wiki/Jagmeet_Singh"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "jkenney",
+      "name": "Jason Kenney",
+      "handles": ["jkenney"],
+      "role": "Former Premier of Alberta (2019–2022)",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Oakville, Ontario, Canada",
+        "birth_year": 1968,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Oakville, Ontario.",
+        "source_url": "https://en.wikipedia.org/wiki/Jason_Kenney"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "narendramodi",
+      "name": "Narendra Modi",
+      "handles": ["narendramodi"],
+      "role": "Prime Minister of India (2014–present)",
+      "jurisdiction": "IN",
+      "biography": {
+        "birth_place": "Vadnagar, Bombay State (now Gujarat), India",
+        "birth_year": 1950,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Vadnagar, Gujarat, India.",
+        "source_url": "https://en.wikipedia.org/wiki/Narendra_Modi"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "borisjohnson",
+      "name": "Boris Johnson",
+      "handles": ["borisjohnson"],
+      "role": "Prime Minister of the United Kingdom (2019–2022)",
+      "jurisdiction": "GB",
+      "biography": {
+        "birth_place": "Upper East Side, New York City, USA",
+        "birth_year": 1964,
+        "is_immigrant": true,
+        "parents_immigrant": false,
+        "migration_note": "Born in New York City, USA — the only British Prime Minister born in the United States. He held dual US-British citizenship until he renounced his US citizenship in 2016 following a tax dispute with the IRS.",
+        "source_url": "https://en.wikipedia.org/wiki/Boris_Johnson"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "deport", "asylum", "open borders", "channel crossing", "illegal crossing"],
+      "mirror_note": "Public records indicate Boris Johnson was born in New York City, USA, and held dual US-British citizenship until renouncing his US citizenship in 2016. He is the only British Prime Minister born in the United States."
+    },
+    {
+      "id": "rishisunak",
+      "name": "Rishi Sunak",
+      "handles": ["rishisunak"],
+      "role": "Prime Minister of the United Kingdom (2022–2024)",
+      "jurisdiction": "GB",
+      "biography": {
+        "birth_place": "Southampton, England, UK",
+        "birth_year": 1980,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Southampton, England. Father Yashvir Sunak was born in Kenya to a Punjabi Indian family; mother Usha Sunak was born in Tanzania to a Gujarati Indian family. Both parents are immigrants from East Africa of South Asian heritage.",
+        "source_url": "https://en.wikipedia.org/wiki/Rishi_Sunak"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "deport", "asylum seeker", "channel crossing", "open borders", "legal migration"],
+      "mirror_note": "Public records indicate Rishi Sunak was born to Indian immigrant parents — his father came from Kenya and his mother from Tanzania. He is the first British Prime Minister of South Asian descent."
+    },
+    {
+      "id": "nigel_farage",
+      "name": "Nigel Farage",
+      "handles": ["nigel_farage"],
+      "role": "Leader, Reform UK; former UKIP leader; former Member of European Parliament",
+      "jurisdiction": "GB",
+      "biography": {
+        "birth_place": "Orpington, Kent, England, UK",
+        "birth_year": 1964,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Orpington, Kent, England. His second wife Kirsten Farage (née Mehr) is a German-born citizen. While campaigning to end EU Freedom of Movement, Farage received those same mobility rights through his German wife.",
+        "source_url": "https://en.wikipedia.org/wiki/Nigel_Farage"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "eu freedom of movement", "open borders", "deport", "asylum", "channel crossing", "foreign workers"],
+      "mirror_note": "Public records indicate Nigel Farage, a vocal opponent of EU free movement, married a German citizen (Kirsten Farage, née Mehr) and reportedly received EU Freedom of Movement benefits himself through that marriage."
+    },
+    {
+      "id": "marine_lepen",
+      "name": "Marine Le Pen",
+      "handles": ["marine_lepen"],
+      "role": "Leader, Rassemblement National (National Rally); French MP",
+      "jurisdiction": "FR",
+      "biography": {
+        "birth_place": "Neuilly-sur-Seine, Île-de-France, France",
+        "birth_year": 1968,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Neuilly-sur-Seine, France. Daughter of National Front founder Jean-Marie Le Pen.",
+        "source_url": "https://en.wikipedia.org/wiki/Marine_Le_Pen"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "ericzemmour",
+      "name": "Éric Zemmour",
+      "handles": ["ericzemmour"],
+      "role": "French politician; founder, Reconquête party; former political commentator",
+      "jurisdiction": "FR",
+      "biography": {
+        "birth_place": "Montreuil, Seine-Saint-Denis, France",
+        "birth_year": 1958,
+        "is_immigrant": false,
+        "parents_immigrant": true,
+        "migration_note": "Born in Montreuil, France. Both parents are Algerian Jewish Berber immigrants from Kabylie, Algeria — father Roger Zemmour and mother Lucette (née Abihssira) immigrated from Algeria to France.",
+        "source_url": "https://en.wikipedia.org/wiki/%C3%89ric_Zemmour"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "great replacement", "remigration", "deport", "invasion", "arab", "algerian", "north africa"],
+      "mirror_note": "Public records indicate Éric Zemmour's parents are Algerian Berber Jewish immigrants from Kabylie, Algeria who came to France. Zemmour is a second-generation immigrant who ran for President on an anti-immigration platform."
+    },
+    {
+      "id": "geertwilders",
+      "name": "Geert Wilders",
+      "handles": ["geertwilders"],
+      "role": "Leader, Party for Freedom (PVV); Dutch Member of Parliament",
+      "jurisdiction": "NL",
+      "biography": {
+        "birth_place": "Venlo, Limburg, Netherlands",
+        "birth_year": 1963,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Venlo, Netherlands. Has partial Indonesian heritage through his maternal grandmother, who was from the former Dutch East Indies (now Indonesia). Wilders has publicly acknowledged his partly Indonesian background.",
+        "source_url": "https://en.wikipedia.org/wiki/Geert_Wilders"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "islam", "refugee", "deport", "open borders", "multicultural"],
+      "mirror_note": "Public records indicate Geert Wilders has Indonesian heritage through his maternal grandmother from the former Dutch East Indies (now Indonesia) — a fact he has acknowledged publicly."
+    },
+    {
+      "id": "jaibolsonaro",
+      "name": "Jair Bolsonaro",
+      "handles": ["jaibolsonaro"],
+      "role": "Former President of Brazil (2019–2023)",
+      "jurisdiction": "BR",
+      "biography": {
+        "birth_place": "Glicério, São Paulo, Brazil",
+        "birth_year": 1955,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Glicério, São Paulo, Brazil. Italian ancestry — grandparents emigrated from Veneto, Italy.",
+        "source_url": "https://en.wikipedia.org/wiki/Jair_Bolsonaro"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "netanyahu",
+      "name": "Benjamin Netanyahu",
+      "handles": ["netanyahu"],
+      "role": "Prime Minister of Israel (1996–1999; 2009–2021; 2022–present)",
+      "jurisdiction": "IL",
+      "biography": {
+        "birth_place": "Tel Aviv, Israel",
+        "birth_year": 1949,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Tel Aviv, Israel. Grew up partly in the United States while his father Benzion Netanyahu held an academic position at Cornell University.",
+        "source_url": "https://en.wikipedia.org/wiki/Benjamin_Netanyahu"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "cobratate",
+      "name": "Andrew Tate",
+      "handles": ["cobratate"],
+      "role": "Internet personality; former kickboxer",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Washington D.C., USA",
+        "birth_year": 1986,
+        "is_immigrant": true,
+        "parents_immigrant": false,
+        "migration_note": "Born in Washington D.C., USA. Dual US-British citizen. Raised in Luton, England. Relocated to Romania in 2017. Was placed under house arrest in Romania in 2022 on human trafficking and rape charges; later indicted.",
+        "source_url": "https://en.wikipedia.org/wiki/Andrew_Tate"
+      },
+      "mirror_triggers": ["immigration", "immigrant", "deport", "foreign"],
+      "mirror_note": "Public records indicate Andrew Tate was born in Washington D.C., USA, and is a US-British dual citizen currently living as an immigrant in Romania."
+    },
+    {
+      "id": "gretathunberg",
+      "name": "Greta Thunberg",
+      "handles": ["gretathunberg"],
+      "role": "Swedish climate activist",
+      "jurisdiction": "SE",
+      "biography": {
+        "birth_place": "Stockholm, Sweden",
+        "birth_year": 2003,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Stockholm, Sweden.",
+        "source_url": "https://en.wikipedia.org/wiki/Greta_Thunberg"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "randpaul",
+      "name": "Rand Paul",
+      "handles": ["randpaul"],
+      "role": "US Senator, Kentucky (2011–present); physician",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Pittsburgh, Pennsylvania, USA",
+        "birth_year": 1963,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Pittsburgh, Pennsylvania.",
+        "source_url": "https://en.wikipedia.org/wiki/Rand_Paul"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "stevebannon",
+      "name": "Steve Bannon",
+      "handles": ["stevebannon"],
+      "role": "Former White House Chief Strategist (2017); political strategist",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Norfolk, Virginia, USA",
+        "birth_year": 1953,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Norfolk, Virginia. Irish-American descent.",
+        "source_url": "https://en.wikipedia.org/wiki/Steve_Bannon"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "candaceowens",
+      "name": "Candace Owens",
+      "handles": ["candaceowens"],
+      "role": "Conservative commentator; author",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Stamford, Connecticut, USA",
+        "birth_year": 1989,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Stamford, Connecticut. Married George Farmer, a British man. Lives between the US and UK.",
+        "source_url": "https://en.wikipedia.org/wiki/Candace_Owens"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "repjimjordan",
+      "name": "Jim Jordan",
+      "handles": ["repjimjordan"],
+      "role": "US Representative, OH-4 (2007–present)",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Urbana, Ohio, USA",
+        "birth_year": 1964,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Urbana, Ohio.",
+        "source_url": "https://en.wikipedia.org/wiki/Jim_Jordan_(politician)"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "seanhannity",
+      "name": "Sean Hannity",
+      "handles": ["seanhannity"],
+      "role": "Fox News host; conservative commentator",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "New York City, New York, USA",
+        "birth_year": 1961,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in New York City. Irish-American descent.",
+        "source_url": "https://en.wikipedia.org/wiki/Sean_Hannity"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "ingrahamangle",
+      "name": "Laura Ingraham",
+      "handles": ["ingrahamangle"],
+      "role": "Fox News host; conservative commentator",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Glastonbury, Connecticut, USA",
+        "birth_year": 1963,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Glastonbury, Connecticut. German and Polish-American ancestry on her father's side.",
+        "source_url": "https://en.wikipedia.org/wiki/Laura_Ingraham"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "dannybongino",
+      "name": "Dan Bongino",
+      "handles": ["dannybongino"],
+      "role": "Conservative commentator; former Secret Service agent",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Queens, New York City, USA",
+        "birth_year": 1974,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Queens, New York. Italian-American descent.",
+        "source_url": "https://en.wikipedia.org/wiki/Dan_Bongino"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "rogerjstonejr",
+      "name": "Roger Stone",
+      "handles": ["rogerjstonejr"],
+      "role": "Political consultant; former Trump adviser",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Norwalk, Connecticut, USA",
+        "birth_year": 1952,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Norwalk, Connecticut.",
+        "source_url": "https://en.wikipedia.org/wiki/Roger_Stone"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "genflynn",
+      "name": "Michael Flynn",
+      "handles": ["genflynn"],
+      "role": "Retired US Army Lieutenant General; former National Security Advisor",
+      "jurisdiction": "US",
+      "biography": {
+        "birth_place": "Middletown, Rhode Island, USA",
+        "birth_year": 1958,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Middletown, Rhode Island. Irish-American descent.",
+        "source_url": "https://en.wikipedia.org/wiki/Michael_Flynn"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    },
+    {
+      "id": "maximebernier",
+      "name": "Maxime Bernier",
+      "handles": ["maximebernier"],
+      "role": "Leader, People's Party of Canada (2018–present)",
+      "jurisdiction": "CA",
+      "biography": {
+        "birth_place": "Saint-Georges, Quebec, Canada",
+        "birth_year": 1963,
+        "is_immigrant": false,
+        "parents_immigrant": false,
+        "migration_note": "Born in Saint-Georges, Quebec.",
+        "source_url": "https://en.wikipedia.org/wiki/Maxime_Bernier"
+      },
+      "mirror_triggers": [],
+      "mirror_note": null
+    }
+  ],
+
   "_rag_config": {
     "phase": "Phase 2 — not yet implemented",
     "note": "When a figure is NOT in the static database, GlassBox will query the Perplexity Sonar API to retrieve real-time verified public records. Requires user-provided API key stored in extension settings.",

@@ -677,16 +677,18 @@
   // Sonar API at trigger time to fetch real-time verified public records.
   // ════════════════════════════════════════════════════════════════════════════
 
-  let _publicFigureDB = null;
+  let _publicFigureDB  = null;
+  let _entityIndexDB   = null;
 
   async function loadPublicFigures() {
-    if (_publicFigureDB) return _publicFigureDB;
+    if (_publicFigureDB !== null) return { figures: _publicFigureDB, entityIndex: _entityIndexDB };
     try {
-      const url = chrome.runtime.getURL('data/public-figures.json');
+      const url  = chrome.runtime.getURL('data/public-figures.json');
       const json = await fetch(url).then(r => r.json());
-      _publicFigureDB = json.figures || [];
-    } catch { _publicFigureDB = []; }
-    return _publicFigureDB;
+      _publicFigureDB = json.figures       || [];
+      _entityIndexDB  = json.entity_index  || [];
+    } catch { _publicFigureDB = []; _entityIndexDB = []; }
+    return { figures: _publicFigureDB, entityIndex: _entityIndexDB };
   }
 
   // Extract Twitter/X author handle from a tweet article element
@@ -706,11 +708,42 @@
   async function findPublicFigure(tweetEl) {
     const handle = getAuthorHandle(tweetEl);
     if (!handle) return null;
-    const figures = await loadPublicFigures();
-    return figures.find(f => (f.handles || []).some(h => h.replace(/^@/, '').toLowerCase() === handle)) || null;
+    const { figures, entityIndex } = await loadPublicFigures();
+    const norm = h => h.replace(/^@/, '').toLowerCase();
+    // Full accountability record takes priority (has legal/fact_check data)
+    const full = figures.find(f => (f.handles || []).some(h => norm(h) === handle));
+    if (full) return full;
+    // Fall back to entity_index (biography + mirror context only)
+    return entityIndex.find(f => (f.handles || []).some(h => norm(h) === handle)) || null;
   }
 
-  function renderAccountabilityCard(figure) {
+  // Detect mirror context: does the tweet topic contrast with the author's documented biography?
+  function detectMirrorContext(figure, text) {
+    if (!figure?.mirror_triggers?.length || !figure?.mirror_note) return null;
+    const norm = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+    const triggered = figure.mirror_triggers.some(t => norm.includes(t.toLowerCase()));
+    return triggered ? { note: figure.mirror_note, bio: figure.biography } : null;
+  }
+
+  function _resonanceBadgeHTML(resonanceScore) {
+    if (!resonanceScore) return '';
+    return `<span class="gb-acct-card__resonance" style="color:${resonanceScore.color};border-color:${resonanceScore.color}44;background:${resonanceScore.color}11">${resonanceScore.resonance}% ${resonanceScore.label}</span>`;
+  }
+
+  function _mirrorSectionHTML(mirrorCtx) {
+    if (!mirrorCtx) return '';
+    const srcLink = mirrorCtx.bio?.source_url
+      ? `<a class="gb-acct-card__item-link" href="${mirrorCtx.bio.source_url}" target="_blank" rel="noopener noreferrer">📄 Wikipedia biographical record</a>`
+      : '';
+    return `
+      <div class="gb-acct-card__section gb-acct-card__section--mirror">
+        <div class="gb-acct-card__section-title">🪞 Biographical Mirror</div>
+        <div class="gb-acct-card__mirror-note">${mirrorCtx.note}</div>
+        ${srcLink}
+      </div>`;
+  }
+
+  function renderAccountabilityCard(figure, resonanceScore, mirrorCtx) {
     const el = document.createElement('div');
     el.setAttribute('data-glassbox', 'accountability-card');
     el.className = 'gb-acct-card';
@@ -747,6 +780,7 @@
       </div>`).join('');
 
     const sections = [
+      _mirrorSectionHTML(mirrorCtx),
       legalHTML   ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">⚖️ Verified Legal Proceedings</div>${legalHTML}</div>` : '',
       factHTML    ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">🔎 Documented Contradictions</div>${factHTML}</div>` : '',
       financeHTML ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">💰 Financial Ties to This Topic</div>${financeHTML}</div>` : '',
@@ -756,10 +790,48 @@
       <button class="gb-acct-card__trigger" aria-expanded="false">
         <span>🏛️</span>
         <span class="gb-acct-card__trigger-label">Public Record — ${figure.name}</span>
+        ${_resonanceBadgeHTML(resonanceScore)}
         <span class="gb-acct-card__trigger-role">${figure.role || ''}</span>
         <span class="gb-acct-card__trigger-arrow">▼</span>
       </button>
       <div class="gb-acct-card__body">${sections || '<div style="color:#6b7280;font-size:12px;padding:10px">No verified records on file for this topic.</div>'}</div>`;
+
+    el.querySelector('.gb-acct-card__trigger').addEventListener('click', e => {
+      e.stopPropagation();
+      const expanded = el.classList.toggle('gb-acct-card--expanded');
+      el.querySelector('.gb-acct-card__trigger').setAttribute('aria-expanded', expanded);
+    });
+
+    return el;
+  }
+
+  // Lightweight card for entity_index figures: shows only biographical mirror context
+  function renderMirrorCard(figure, mirrorCtx, resonanceScore) {
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'mirror-card');
+    el.className = 'gb-acct-card gb-mirror-card';
+
+    const bioDetail = mirrorCtx.bio?.migration_note
+      ? `<div class="gb-acct-card__item-detail gb-acct-card__mirror-detail">${mirrorCtx.bio.migration_note}</div>` : '';
+    const srcLink = mirrorCtx.bio?.source_url
+      ? `<a class="gb-acct-card__item-link" href="${mirrorCtx.bio.source_url}" target="_blank" rel="noopener noreferrer">📄 Wikipedia biographical record</a>` : '';
+
+    el.innerHTML = `
+      <button class="gb-acct-card__trigger" aria-expanded="false">
+        <span>🪞</span>
+        <span class="gb-acct-card__trigger-label">Biographical Context — ${figure.name}</span>
+        ${_resonanceBadgeHTML(resonanceScore)}
+        <span class="gb-acct-card__trigger-role">${figure.role || ''}</span>
+        <span class="gb-acct-card__trigger-arrow">▼</span>
+      </button>
+      <div class="gb-acct-card__body">
+        <div class="gb-acct-card__section gb-acct-card__section--mirror">
+          <div class="gb-acct-card__section-title">🪞 Biographical Mirror</div>
+          <div class="gb-acct-card__mirror-note">${mirrorCtx.note}</div>
+          ${bioDetail}
+          ${srcLink}
+        </div>
+      </div>`;
 
     el.querySelector('.gb-acct-card__trigger').addEventListener('click', e => {
       e.stopPropagation();
@@ -995,8 +1067,10 @@
       settings.showManipulationIndicators ? detectManipulation(text) : Promise.resolve(null),
       settings.showCredibilityBadges      ? getPostCredibility(postEl) : Promise.resolve([]),
     ]);
-    const toxicity   = settings.showManipulationIndicators ? analyzeToxicity(text) : null;
+    const toxicity    = settings.showManipulationIndicators ? analyzeToxicity(text) : null;
     const primaryCred = getPrimaryCredibilityInfo(credResults);
+    // Compute once here — used by annotation row AND public figure cards
+    const resonance   = computeResonanceScore(text, toxicity);
 
     // Annotation row
     const actionBar = getActionBar(postEl);
@@ -1034,7 +1108,6 @@
       }
 
       // Psycholinguistic score — show resonance indicator when low (< 35%) or high affect
-      const resonance = computeResonanceScore(text, toxicity);
       if (resonance.resonance < 35 || resonance.affect > 55) {
         row.appendChild(createResonanceIndicator(resonance));
       }
@@ -1078,11 +1151,17 @@
       if (annotRow) annotRow.appendChild(createAddContextButton(postHash, textEl));
     }
 
-    // Public figure accountability card
+    // Public figure card — full accountability record OR biographical mirror context
     if (textEl) {
       const figure = await findPublicFigure(postEl);
       if (figure) {
-        textEl.parentElement?.insertBefore(renderAccountabilityCard(figure), textEl.nextSibling);
+        const mirrorCtx  = detectMirrorContext(figure, text);
+        const hasFullData = figure.legal_proceedings?.length || figure.fact_check_discrepancies?.length || figure.financial_ties?.length;
+        if (hasFullData) {
+          textEl.parentElement?.insertBefore(renderAccountabilityCard(figure, resonance, mirrorCtx), textEl.nextSibling);
+        } else if (mirrorCtx) {
+          textEl.parentElement?.insertBefore(renderMirrorCard(figure, mirrorCtx, resonance), textEl.nextSibling);
+        }
       }
     }
 
