@@ -250,9 +250,10 @@
       <input class="form-input" id="add-name" placeholder="e.g. Donald Trump" autocomplete="off">
     </div>
     <div class="form-row">
-      <label class="form-label">Social media handles *</label>
-      <input class="form-input" id="add-handles" placeholder="e.g. realdonaldtrump, POTUS45 (comma-separated)">
-      <div class="form-hint">Include all known handles — the extension will match any of them.</div>
+      <label class="form-label">Twitter / X handle <span style="color:var(--muted);font-weight:400;text-transform:none">(without @)</span></label>
+      <input class="form-input" id="add-handles" placeholder="e.g. elonmusk" autocomplete="off">
+      <div class="form-hint">Their exact username on Twitter/X. If they have multiple, separate with commas: <code style="background:var(--bg);padding:1px 4px;border-radius:3px">realdonaldtrump, POTUS45</code></div>
+      <div id="handle-preview" style="margin-top:6px;font-size:12px;color:var(--teal);display:none"></div>
     </div>
 
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
@@ -473,14 +474,31 @@
     document.getElementById('add-btn').textContent = 'Research & Add';
   }
 
+  // Show handle preview as user types
+  document.getElementById('add-handles').addEventListener('input', e => {
+    const raw = e.target.value.trim();
+    const preview = document.getElementById('handle-preview');
+    if (!raw) { preview.style.display = 'none'; return; }
+    const cleaned = raw.split(',').map(h => h.replace(/^@/, '').trim().toLowerCase()).filter(Boolean);
+    if (cleaned.length) {
+      preview.textContent = `Will store as: ${cleaned.map(h => '@' + h).join(', ')}`;
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+  });
+
   async function addFigure() {
     const name    = document.getElementById('add-name').value.trim();
-    const handles = document.getElementById('add-handles').value.split(',').map(h => h.trim()).filter(Boolean);
-    if (!name || !handles.length) {
-      document.getElementById('add-status').textContent = 'Name and at least one handle are required.';
+    const rawHandles = document.getElementById('add-handles').value;
+    const handles = rawHandles.split(',').map(h => h.replace(/^@/, '').trim().toLowerCase()).filter(Boolean);
+
+    if (!name) {
+      document.getElementById('add-status').textContent = 'Full name is required.';
       document.getElementById('add-status').style.color = 'var(--red)';
       return;
     }
+    // handles are optional — server will derive from name if blank
     document.getElementById('add-btn').disabled = true;
     document.getElementById('add-btn').innerHTML = '<span class="spinner"></span> Researching…';
     document.getElementById('add-status').style.color = 'var(--amber)';

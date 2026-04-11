@@ -394,8 +394,25 @@ app.get('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
 
 app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
   const { name, handles } = req.body;
-  if (!name?.trim() || !handles?.length) return res.status(400).json({ error: 'name and handles required' });
-  const primaryHandle = handles[0].replace(/^@/, '').toLowerCase();
+  if (!name?.trim()) return res.status(400).json({ error: 'name is required' });
+
+  // Normalise handles: strip @, whitespace, lowercase — filter blanks
+  const cleanHandles = (handles || [])
+    .map(h => h.replace(/^@/, '').trim().toLowerCase())
+    .filter(Boolean);
+
+  // If no valid handles supplied, derive a slug from the name
+  const primaryHandle = cleanHandles[0] || name.trim().toLowerCase().replace(/\s+/g, '');
+
+  if (!primaryHandle) return res.status(400).json({ error: 'Could not determine a handle — please provide one' });
+
+  console.log(`[add] name="${name.trim()}" handle="${primaryHandle}" (from handles: ${JSON.stringify(handles)})`);
+
+  // Refuse to overwrite an existing figure with a different name
+  const existing = await store.getFigure(primaryHandle);
+  if (existing && existing.name.toLowerCase() !== name.trim().toLowerCase()) {
+    return res.status(409).json({ error: `Handle @${primaryHandle} already used by "${existing.name}" — choose a different handle` });
+  }
 
   await store.setFigure(primaryHandle, {
     handle: primaryHandle, name: name.trim(),
