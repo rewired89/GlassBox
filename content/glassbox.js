@@ -365,13 +365,15 @@
 
     const textEl = postEl.querySelector(platform.textSel);
     const text   = textEl ? getTextContent(textEl) : '';
-    if (!text || text.trim().length < 15) return;
+    const handle = getAuthorHandle(postEl);
+
+    // Need either meaningful text or a known handle to be worth calling
+    if (!text && !handle) return;
 
     // Only call API if configured; silently skip otherwise
     if (!settings.apiUrl) return;
 
     const imageUrls = getImageUrls(postEl);
-    const handle    = getAuthorHandle(postEl);
 
     let result = null;
     try {
@@ -415,17 +417,12 @@
       insertPoint.insertBefore(container, textEl.nextSibling);
     }
 
-    // ── Figure card (full or mirror) ──────────────────────────────────────────
+    // ── Figure card — always show when figure is in the database ─────────────
     if (result.figure) {
-      const fig = result.figure;
-      const res = result.resonance;
-      const hasFullData = fig.legal_proceedings?.length || fig.fact_check_discrepancies?.length || fig.financial_ties?.length;
-
-      if (hasFullData) {
-        insertPoint.insertBefore(renderAccountabilityCard(fig, res), textEl.nextSibling);
-      } else if (fig.mirror_note) {
-        insertPoint.insertBefore(renderMirrorCard(fig, res), textEl.nextSibling);
-      }
+      insertPoint.insertBefore(
+        renderAccountabilityCard(result.figure, result.resonance),
+        textEl.nextSibling
+      );
     }
   }
 
