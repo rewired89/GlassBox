@@ -406,13 +406,7 @@ app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
 
   if (!primaryHandle) return res.status(400).json({ error: 'Could not determine a handle — please provide one' });
 
-  console.log(`[add] name="${name.trim()}" handle="${primaryHandle}" (from handles: ${JSON.stringify(handles)})`);
-
-  // Refuse to overwrite an existing figure with a different name
-  const existing = await store.getFigure(primaryHandle);
-  if (existing && existing.name.toLowerCase() !== name.trim().toLowerCase()) {
-    return res.status(409).json({ error: `Handle @${primaryHandle} already used by "${existing.name}" — choose a different handle` });
-  }
+  console.log(`[add] name="${name.trim()}" handle="${primaryHandle}" allHandles=${JSON.stringify(cleanHandles)}`);
 
   await store.setFigure(primaryHandle, {
     handle: primaryHandle, name: name.trim(),
