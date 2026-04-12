@@ -219,13 +219,20 @@ async function loadSettings() {
   if (s.apiUrl) checkApiStatus(s.apiUrl);
 }
 
+function normalizeUrl(url) {
+  const u = url.trim();
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u.replace(/\/$/, '');
+  return 'https://' + u.replace(/\/$/, '');
+}
+
 async function checkApiStatus(url) {
   const el = document.getElementById('api-status');
   if (!url) { el.textContent = ''; return; }
   el.textContent = 'Checking…';
   el.style.color = 'var(--text-muted)';
   try {
-    const r = await fetch(`${url.replace(/\/$/, '')}/api/health`, { signal: AbortSignal.timeout(5000) });
+    const r = await fetch(`${normalizeUrl(url)}/api/health`, { signal: AbortSignal.timeout(5000) });
     const d = await r.json();
     el.textContent = `✓ Connected — ${d.figures} figures, ${d.cards} cards`;
     el.style.color = 'var(--green)';
@@ -247,7 +254,7 @@ document.getElementById('save-settings').addEventListener('click', async () => {
     newSettings[key] = el.type === 'checkbox' ? el.checked
       : el.type === 'number' ? Number(el.value) : el.value;
   }
-  newSettings.apiUrl = document.getElementById('setting-api-url').value.trim();
+  newSettings.apiUrl = normalizeUrl(document.getElementById('setting-api-url').value);
   await saveSettings(newSettings);
   const ind = document.getElementById('save-indicator');
   ind.classList.add('save-indicator--visible');
