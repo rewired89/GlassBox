@@ -142,7 +142,11 @@
         body:    JSON.stringify({ text, imageUrls, handle, platform: platformName }),
         signal:  AbortSignal.timeout(15_000),
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        console.error(`[GlassBox] API ${res.status} error:`, errBody.detail || errBody.error || res.statusText);
+        return null;
+      }
       const data = await res.json();
       _cache.set(key, data);
       // Expire after 10 minutes

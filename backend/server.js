@@ -392,6 +392,18 @@ const adminLimit    = rateLimit({ windowMs: 60_000, max: 60 });
 
 app.get('/', (req, res) => res.redirect('/admin'));
 
+// Debug endpoint — shows env var status without exposing values
+app.get('/api/debug', (req, res) => {
+  res.json({
+    anthropic_key:  process.env.ANTHROPIC_API_KEY ? `set (${process.env.ANTHROPIC_API_KEY.slice(0,8)}…)` : 'MISSING',
+    database_url:   process.env.DATABASE_URL      ? 'set' : 'not set (using JSON)',
+    admin_key:      process.env.ADMIN_KEY          ? 'set' : 'using default',
+    port:           PORT,
+    node_version:   process.version,
+    storage:        pool ? 'postgresql' : 'json-files',
+  });
+});
+
 app.get('/api/health', async (req, res) => {
   const figCount = pool
     ? (await pool.query('SELECT COUNT(*) FROM figures')).rows[0].count
