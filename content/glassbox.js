@@ -72,6 +72,7 @@
   const PLATFORM = Object.entries(PLATFORMS).find(([, p]) => p.test());
   if (!PLATFORM) return;
   const [platformName, platform] = PLATFORM;
+  console.log(`[GlassBox] loaded on ${platformName}`);
 
   // ── Utilities ─────────────────────────────────────────────────────────────────
   function debounce(fn, ms) {
@@ -404,17 +405,28 @@
     if (!text && !handle) return;
 
     // Only call API if configured; silently skip otherwise
-    if (!settings.apiUrl) return;
+    if (!settings.apiUrl) {
+      console.log('[GlassBox] skipping — API URL not set. Go to extension popup → Settings to configure it.');
+      return;
+    }
+
+    console.log(`[GlassBox] analyzing post by @${handle || 'unknown'} — text: "${text.slice(0,60)}…"`);
 
     const imageUrls = getImageUrls(postEl);
 
     let result = null;
     try {
       result = await callAPI(text, imageUrls, handle);
-    } catch { return; }
-    if (!result) return;
+    } catch (e) {
+      console.warn('[GlassBox] API error:', e.message);
+      return;
+    }
+    if (!result) { console.log('[GlassBox] API returned null — check API URL and server logs'); return; }
 
-    const insertPoint = textEl?.parentElement;
+    console.log('[GlassBox] result:', { flagged: result.flagged, figure: result.figure?.name, resonance: result.resonance?.score });
+
+    // Fallback insert point: text element's parent, or the article itself
+    const insertPoint = textEl?.parentElement ?? postEl.querySelector('[data-testid="tweetText"]')?.closest('div') ?? postEl;
     if (!insertPoint) return;
 
     // ── Annotation row (resonance indicator) ──────────────────────────────────
@@ -547,7 +559,9 @@
   // Scan for existing posts + watch for new ones
   function startObserver() {
     const scan = () => {
-      document.querySelectorAll(platform.postSel).forEach(queuePost);
+      const posts = document.querySelectorAll(platform.postSel);
+      if (posts.length) console.log(`[GlassBox] found ${posts.length} post(s) on page`);
+      posts.forEach(queuePost);
     };
 
     const mo = new MutationObserver(mutations => {
