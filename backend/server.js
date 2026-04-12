@@ -578,7 +578,7 @@ app.get('/api/admin/figures/:handle/status', requireAdmin, adminLimit, async (re
 
 // Bulk-seed pre-defined politicians list
 app.post('/api/admin/seed', requireAdmin, adminLimit, async (req, res) => {
-  const listPath = path.join(__dirname, '..', 'data', 'politicians.json');
+  const listPath = path.join(__dirname, 'data', 'politicians.json');
   if (!fs.existsSync(listPath)) return res.status(404).json({ error: 'politicians.json not found' });
   const politicians = JSON.parse(fs.readFileSync(listPath, 'utf8'));
   const results = [];
