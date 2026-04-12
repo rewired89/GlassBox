@@ -159,15 +159,40 @@
 
   // ── Renderers ─────────────────────────────────────────────────────────────────
 
+  const RESONANCE_DESCRIPTIONS = {
+    Empathetic: 'Respectful, good-faith tone. Fact-based and constructive.',
+    Neutral:    'Balanced, informational tone. No strong emotional charge.',
+    Dismissive: 'Condescending or indifferent. Opinion-driven, low on facts.',
+    Hostile:    'Aggressive or dehumanizing. Designed to provoke fear or anger.',
+  };
+
   function renderResonanceIndicator(resonance) {
+    const label = resonance.label || 'Neutral';
+    const desc  = RESONANCE_DESCRIPTIONS[label] || '';
+    const icon  = resonance.score < 35 ? '💢' : (resonance.score < 50 ? '⚠️' : '💬');
+
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-glassbox', 'resonance-indicator');
+    wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:2px;';
+
     const btn = document.createElement('button');
-    btn.setAttribute('data-glassbox', 'resonance-indicator');
     btn.className = 'gb-resonance';
     btn.style.cssText = `color:${resonance.color};border-color:${resonance.color}33;background:${resonance.color}11`;
-    btn.title = `Sympathetic Resonance: ${resonance.score}%  |  Toxic Affect: ${resonance.affect}%`;
-    btn.textContent = `${resonance.score < 35 ? '💢' : '💭'} ${resonance.score}% resonance`;
-    btn.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
-    return btn;
+    btn.textContent = `${icon} ${resonance.score}% ${label}`;
+
+    const detail = document.createElement('div');
+    detail.className = 'gb-resonance-detail';
+    detail.style.cssText = `display:none;font-size:11px;color:${resonance.color};padding:3px 6px;border-radius:4px;background:${resonance.color}11;max-width:220px;line-height:1.4`;
+    detail.textContent = desc;
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation(); e.preventDefault();
+      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+    });
+
+    wrap.appendChild(btn);
+    wrap.appendChild(detail);
+    return wrap;
   }
 
   function renderFactCheckBanner(fc) {
@@ -221,7 +246,8 @@
 
   function _resonanceBadgeHTML(res) {
     if (!res) return '';
-    return `<span class="gb-acct-card__resonance" style="color:${res.color};border-color:${res.color}44;background:${res.color}11">${res.score}% ${res.label}</span>`;
+    const icon = res.score < 35 ? '💢' : (res.score < 50 ? '⚠️' : '💬');
+    return `<span class="gb-acct-card__resonance" title="${RESONANCE_DESCRIPTIONS[res.label] || ''}" style="color:${res.color};border-color:${res.color}44;background:${res.color}11">${icon} ${res.score}% ${res.label}</span>`;
   }
 
   function renderAccountabilityCard(figure, resonance) {
