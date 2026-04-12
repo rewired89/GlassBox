@@ -445,6 +445,9 @@
     const text   = textEl ? getTextContent(textEl) : '';
     const handle = getAuthorHandle(postEl);
 
+    // Skip compose/DM pages — nothing to annotate there
+    if (location.pathname.includes('/compose/') || location.pathname.includes('/messages/')) return;
+
     // Need either meaningful text or a known handle to be worth calling
     if (!text && !handle) return;
 

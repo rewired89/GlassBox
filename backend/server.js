@@ -444,7 +444,28 @@ app.get('/api/health', async (req, res) => {
 // Analyze a post
 app.post('/api/analyze', analysisLimit, async (req, res) => {
   const { text, imageUrls = [], handle = null } = req.body;
-  if (!text || text.trim().length < 10) return res.status(400).json({ error: 'text required' });
+  const hasText = text && text.trim().length >= 10;
+
+  // No text but we have a handle — return just the figure card, skip Claude
+  if (!hasText) {
+    if (!handle) return res.status(400).json({ error: 'text required' });
+    const figure = await store.getFigure(handle);
+    if (!figure) return res.status(400).json({ error: 'text required' });
+    return res.json({
+      flagged: false, flag_reason: null, flag_categories: [],
+      resonance: { score: 50, affect: 0, label: 'Neutral', color: '#9ca3af' },
+      context_card: null, context_card_id: null, fact_checks: [], image_concerns: null,
+      figure: {
+        name: figure.name, role: figure.role, handle: figure.handle,
+        mirror_note: figure.mirror_note, mirror_triggers: figure.mirror_triggers,
+        sex_offender_registry: figure.sex_offender_registry,
+        criminal_convictions: figure.criminal_convictions,
+        legal_proceedings: figure.legal_proceedings,
+        fact_check_discrepancies: figure.fact_check_discrepancies,
+        financial_ties: figure.financial_ties, biography: figure.biography,
+      },
+    });
+  }
 
   const cacheKey = sha(text.slice(0, 600) + (handle || '') + String((imageUrls || []).length));
   const cached = await store.getCache(cacheKey);
