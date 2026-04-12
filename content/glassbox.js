@@ -252,7 +252,40 @@
         </div>`;
     })();
 
+    // Sex offender registry alert
+    const registryHTML = (() => {
+      const reg = figure.sex_offender_registry;
+      if (!reg?.registered) return '';
+      const matches = reg.matches || [{ offense: reg.offense, jurisdiction: reg.jurisdiction }];
+      return `<div class="gb-acct-card__section" style="border-left:3px solid #ef4444;background:rgba(239,68,68,0.06)">
+        <div class="gb-acct-card__section-title" style="color:#ef4444">🚨 Registered Sex Offender — NSOPW.gov</div>
+        ${matches.map(m => `
+          <div class="gb-acct-card__item">
+            <span class="gb-acct-card__item-badge gb-acct-card__item-badge--convicted">registered</span>
+            <div>
+              <div class="gb-acct-card__item-title">${escHTML(m.jurisdiction || reg.jurisdiction || '')} Registry</div>
+              <div class="gb-acct-card__item-detail">${escHTML(m.offense || reg.offense || 'Registered sex offense')}</div>
+              ${(m.registry_url || reg.registry_url) ? `<a class="gb-acct-card__item-link" href="${escHTML(m.registry_url || reg.registry_url)}" target="_blank" rel="noopener noreferrer">🔗 Registry entry</a>` : '<a class="gb-acct-card__item-link" href="https://www.nsopw.gov" target="_blank" rel="noopener noreferrer">🔗 NSOPW.gov</a>'}
+            </div>
+          </div>`).join('')}
+        ${reg.disclaimer ? `<div style="font-size:10px;color:#9ca3af;margin-top:4px">⚠️ ${escHTML(reg.disclaimer)}</div>` : ''}
+      </div>`;
+    })();
+
+    // Criminal convictions
+    const convictionsHTML = (figure.criminal_convictions || []).slice(0, 3).map(c => `
+      <div class="gb-acct-card__item">
+        <span class="gb-acct-card__item-badge gb-acct-card__item-badge--convicted">${escHTML(c.severity || 'conviction')}</span>
+        <div>
+          <div class="gb-acct-card__item-title">${escHTML(c.offense)}</div>
+          <div class="gb-acct-card__item-detail">${escHTML(c.jurisdiction)} · ${escHTML(c.conviction_date || '')}${c.sentence ? ` · ${escHTML(c.sentence)}` : ''}</div>
+          ${c.source_url ? `<a class="gb-acct-card__item-link" href="${escHTML(c.source_url)}" target="_blank" rel="noopener noreferrer">📄 ${escHTML(c.source)}</a>` : ''}
+        </div>
+      </div>`).join('');
+
     const sections = [
+      registryHTML,
+      convictionsHTML ? `<div class="gb-acct-card__section" style="border-left:3px solid #ef4444;background:rgba(239,68,68,0.04)"><div class="gb-acct-card__section-title" style="color:#ef4444">🔒 Criminal Convictions</div>${convictionsHTML}</div>` : '',
       mirrorHTML,
       legalHTML   ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">⚖️ Verified Legal Proceedings</div>${legalHTML}</div>` : '',
       factHTML    ? `<div class="gb-acct-card__section"><div class="gb-acct-card__section-title">🔎 Documented Contradictions</div>${factHTML}</div>` : '',

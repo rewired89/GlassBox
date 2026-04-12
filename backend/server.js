@@ -247,27 +247,99 @@ Only flag: specific false factual claims contradicted by overwhelming documented
   catch { const m = raw.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error('Non-JSON response'); }
 }
 
-// ── Claude: research a public figure ─────────────────────────────────────────
+// ── CourtListener: federal court records ──────────────────────────────────────
+async function lookupCourtListener(name) {
+  try {
+    const q = encodeURIComponent(name);
+    const r = await fetch(
+      `https://www.courtlistener.com/api/rest/v3/search/?q=${q}&type=o&order_by=score+desc&stat_Precedential=on`,
+      { headers: { 'User-Agent': 'GlassBox-AccountabilityTool/2.0' }, signal: AbortSignal.timeout(8000) }
+    );
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.results || []).slice(0, 5).map(c => ({
+      case:       c.caseName || c.case_name || '',
+      court:      c.court    || '',
+      date:       c.dateFiled || c.date_filed || '',
+      status:     'documented',
+      summary:    c.snippet  || '',
+      source:     'CourtListener / PACER',
+      source_url: c.absolute_url ? `https://www.courtlistener.com${c.absolute_url}` : null,
+    })).filter(c => c.case);
+  } catch { return []; }
+}
+
+// ── NSOPW: National Sex Offender Public Website ───────────────────────────────
+async function lookupNSOPW(name) {
+  try {
+    const parts  = name.trim().split(/\s+/);
+    const first  = parts[0]  || '';
+    const last   = parts.slice(-1)[0] || '';
+    const r = await fetch('https://www.nsopw.gov/api/Search/GetSearchResults', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'GlassBox-AccountabilityTool/2.0' },
+      body:    JSON.stringify({ firstName: first, lastName: last, territories: ['all'] }),
+      signal:  AbortSignal.timeout(10_000),
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const hits = (d.results || []).slice(0, 3);
+    if (!hits.length) return null;
+    return {
+      registered:   true,
+      matches:      hits.map(h => ({
+        name:        `${h.firstName || ''} ${h.lastName || ''}`.trim(),
+        jurisdiction: h.territory || '',
+        offense:     h.primaryOffense || h.offense || 'Registered sex offense',
+        registry_url: h.url || null,
+      })),
+      source:       'NSOPW.gov (National Sex Offender Public Website)',
+      source_url:   'https://www.nsopw.gov',
+      disclaimer:   'Match based on name only — verify identity before drawing conclusions.',
+    };
+  } catch { return null; }
+}
+
+// ── Claude: research a person's public records ────────────────────────────────
 async function claudeResearch(name, handles) {
   const resp = await anthropic.messages.create({
     model: 'claude-sonnet-4-6', max_tokens: 4096,
-    messages: [{ role: 'user', content: `You are a public records researcher for an accountability journalism tool.
+    messages: [{ role: 'user', content: `You are a public records researcher for a safety and accountability tool.
 
-Research: ${name} (handles: ${handles.map(h => '@' + h.replace(/^@/, '')).join(', ')})
+Research: ${name} (social handles: ${handles.map(h => '@' + h.replace(/^@/, '')).join(', ')})
+
+Search for ALL of the following from public records only. Include findings for public figures AND private individuals if records exist.
 
 Return ONLY valid JSON — no markdown:
 {
   "name": "full legal name",
-  "role": "current or most recent official title",
-  "jurisdiction": "US|CA|GB|AU|IN|FR|etc",
+  "role": "public title or occupation if known, or null",
+  "jurisdiction": "US|CA|GB|AU|etc or null",
   "biography": {
-    "birth_place": "city, country",
+    "birth_place": "city, state/country or null",
     "birth_year": number or null,
     "is_immigrant": boolean,
     "parents_immigrant": boolean,
-    "migration_note": "factual immigration background if relevant to their public positions, or null",
-    "source_url": "Wikipedia or official bio URL"
+    "migration_note": "factual note if relevant, or null",
+    "source_url": "Wikipedia or official bio URL or null"
   },
+  "sex_offender_registry": {
+    "registered": boolean,
+    "jurisdiction": "state or null",
+    "offense": "offense description or null",
+    "conviction_date": "YYYY or null",
+    "registry_url": "official registry URL or null"
+  },
+  "criminal_convictions": [{
+    "offense": "exact offense",
+    "severity": "felony|misdemeanor",
+    "conviction_date": "YYYY-MM-DD or YYYY",
+    "sentence": "sentence details",
+    "jurisdiction": "county, state or federal",
+    "case_number": "case number if known",
+    "source": "court name",
+    "source_url": "official court URL or news source"
+  }],
   "legal_proceedings": [{
     "case": "Case name and court",
     "type": "criminal|civil|administrative",
@@ -287,15 +359,20 @@ Return ONLY valid JSON — no markdown:
     "entity": "company or organization",
     "relationship": "description",
     "amount": "amount if publicly known",
-    "relevance": "why relevant to their public statements",
+    "relevance": "why relevant",
     "source": "source name",
     "source_url": "URL"
   }],
-  "mirror_triggers": ["topic keywords where biographical contrast is relevant, e.g. immigration, climate, indigenous"],
-  "mirror_note": "1-2 sentence factual biographical contrast: 'Public records indicate [Name] [fact].' — null if not applicable"
+  "mirror_triggers": ["keywords where biographical contrast is relevant"],
+  "mirror_note": "1-2 sentence factual note or null"
 }
 
-Rules: only include information you are highly confident is accurate and verifiable. Use null or [] when uncertain.` }],
+CRITICAL RULES:
+- Only include information you are highly confident is accurate and from verifiable public records
+- For sex offender registry: check nsopw.gov, state registries (megan's law, etc.)
+- For criminal records: check court documents, news archives, official sources
+- Use null or [] when no verifiable information found — never fabricate
+- A private individual with a public criminal record should have that record included` }],
   });
   const raw = resp.content[0].text.trim();
   try { return JSON.parse(raw); }
@@ -364,6 +441,8 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
         handle:                   figure.handle,
         mirror_note:              figure.mirror_note,
         mirror_triggers:          figure.mirror_triggers,
+        sex_offender_registry:    figure.sex_offender_registry,
+        criminal_convictions:     figure.criminal_convictions,
         legal_proceedings:        figure.legal_proceedings,
         fact_check_discrepancies: figure.fact_check_discrepancies,
         financial_ties:           figure.financial_ties,
@@ -462,20 +541,35 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'adm
 // ── Research runner ───────────────────────────────────────────────────────────
 async function runResearch(name, handles, primaryHandle) {
   try {
-    const data = await claudeResearch(name, handles);
+    // Run Claude research + public safety lookups in parallel
+    const [data, courtRecords, nsopwResult] = await Promise.all([
+      claudeResearch(name, handles),
+      lookupCourtListener(name),
+      lookupNSOPW(name),
+    ]);
+
+    // Merge CourtListener records into legal_proceedings (deduplicated by case name)
+    const existingCases = new Set((data.legal_proceedings || []).map(p => p.case?.toLowerCase()));
+    const mergedProceedings = [
+      ...(data.legal_proceedings || []),
+      ...courtRecords.filter(c => !existingCases.has(c.case?.toLowerCase())),
+    ];
+
     await store.updateFigure(primaryHandle, {
       name:                     data.name                     || name,
       role:                     data.role                     || null,
-      jurisdiction:             data.jurisdiction             || 'US',
+      jurisdiction:             data.jurisdiction             || null,
       biography:                data.biography                || {},
-      legal_proceedings:        data.legal_proceedings        || [],
+      sex_offender_registry:    data.sex_offender_registry    || nsopwResult || null,
+      criminal_convictions:     data.criminal_convictions     || [],
+      legal_proceedings:        mergedProceedings,
       fact_check_discrepancies: data.fact_check_discrepancies || [],
       financial_ties:           data.financial_ties           || [],
       mirror_triggers:          data.mirror_triggers          || [],
       mirror_note:              data.mirror_note              || null,
       research_status: 'done',
     });
-    console.log(`[research] ✓ ${name} (@${primaryHandle})`);
+    console.log(`[research] ✓ ${name} (@${primaryHandle}) — legal:${mergedProceedings.length} court:${courtRecords.length} nsopw:${nsopwResult ? 'HIT' : 'none'}`);
   } catch (err) {
     console.error(`[research] ✗ ${name}:`, err.message);
     await store.updateFigure(primaryHandle, { research_status: 'error' });

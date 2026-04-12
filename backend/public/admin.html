@@ -386,6 +386,35 @@
 
       let html = '';
 
+      // Sex offender registry
+      if (fig.sex_offender_registry?.registered) {
+        const reg = fig.sex_offender_registry;
+        html += `<div class="detail-section">
+          <div class="detail-section-title" style="color:var(--red)">🚨 Sex Offender Registry — NSOPW.gov</div>
+          ${(reg.matches || [{ offense: reg.offense, jurisdiction: reg.jurisdiction, registry_url: reg.registry_url }]).map(m => `
+            <div class="detail-item" style="border-left:3px solid var(--red)">
+              <div class="detail-item-title" style="color:var(--red)">${esc(m.name || fig.name)} — ${esc(m.jurisdiction || reg.jurisdiction || '')}</div>
+              <div class="detail-item-body">Offense: ${esc(m.offense || reg.offense || 'Registered sex offense')}</div>
+              ${(m.registry_url || reg.registry_url) ? `<a class="detail-item-link" href="${esc(m.registry_url || reg.registry_url)}" target="_blank">🔗 Registry entry</a>` : ''}
+            </div>`).join('')}
+          ${reg.disclaimer ? `<div style="font-size:11px;color:var(--dim);margin-top:6px">⚠️ ${esc(reg.disclaimer)}</div>` : ''}
+          <a class="detail-item-link" href="https://www.nsopw.gov" target="_blank">📄 NSOPW.gov</a>
+        </div>`;
+      }
+
+      // Criminal convictions
+      if (fig.criminal_convictions?.length) {
+        html += `<div class="detail-section">
+          <div class="detail-section-title" style="color:var(--red)">🔒 Criminal Convictions (${fig.criminal_convictions.length})</div>
+          ${fig.criminal_convictions.map(c => `
+            <div class="detail-item" style="border-left:3px solid var(--red)">
+              <div class="detail-item-title"><span class="badge badge--error">${esc(c.severity || 'conviction')}</span> ${esc(c.offense)}</div>
+              <div class="detail-item-body">${esc(c.jurisdiction)} · ${esc(c.conviction_date || '')}${c.sentence ? ` · ${esc(c.sentence)}` : ''}</div>
+              ${c.source_url ? `<a class="detail-item-link" href="${esc(c.source_url)}" target="_blank">📄 ${esc(c.source)}</a>` : (c.source ? `<span class="detail-item-link">${esc(c.source)}</span>` : '')}
+            </div>`).join('')}
+        </div>`;
+      }
+
       // Biography
       if (fig.biography?.migration_note || fig.biography?.birth_place) {
         html += `<div class="detail-section">
