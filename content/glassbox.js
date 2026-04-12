@@ -476,18 +476,15 @@
     const insertPoint = textEl?.parentElement ?? postEl.querySelector('[data-testid="tweetText"]')?.closest('div') ?? postEl;
     if (!insertPoint) return;
 
-    // ── Annotation row (resonance indicator) ──────────────────────────────────
+    // ── Annotation row (resonance indicator — always shown when score available) ──
     if (settings.showManipulationIndicators && result.resonance) {
       const actionBar = postEl.querySelector(platform.actionSel);
       if (actionBar && !actionBar.querySelector('[data-glassbox="annotation-row"]')) {
         const row = document.createElement('div');
         row.setAttribute('data-glassbox', 'annotation-row');
         row.className = 'gb-post-annotation';
-        const res = result.resonance;
-        if (res.score < 35 || res.affect > 55) {
-          row.appendChild(renderResonanceIndicator(res));
-        }
-        if (row.children.length) actionBar.appendChild(row);
+        row.appendChild(renderResonanceIndicator(result.resonance));
+        actionBar.appendChild(row);
       }
     }
 
