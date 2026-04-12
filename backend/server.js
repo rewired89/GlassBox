@@ -239,7 +239,8 @@ Resonance guide: 70-100=empathetic/constructive, 50-69=neutral/factual, 30-49=di
 Only flag: specific false factual claims contradicted by overwhelming documented evidence, or explicit dehumanization of groups. Do NOT flag opinions, policy disagreements, or criticism.` });
 
   const resp = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6', max_tokens: 1200,
+    model: 'claude-opus-4-5',
+    max_tokens: 1200,
     messages: [{ role: 'user', content }],
   });
   const raw = resp.content[0].text.trim();
@@ -303,7 +304,8 @@ async function lookupNSOPW(name) {
 // ── Claude: research a person's public records ────────────────────────────────
 async function claudeResearch(name, handles) {
   const resp = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6', max_tokens: 4096,
+    model: 'claude-opus-4-5',
+    max_tokens: 4096,
     messages: [{ role: 'user', content: `You are a public records researcher for a safety and accountability tool.
 
 Research: ${name} (social handles: ${handles.map(h => '@' + h.replace(/^@/, '')).join(', ')})
@@ -391,6 +393,20 @@ const adminLimit    = rateLimit({ windowMs: 60_000, max: 60 });
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 app.get('/', (req, res) => res.redirect('/admin'));
+
+// Minimal Claude connectivity test — no auth required
+app.get('/api/test-claude', async (req, res) => {
+  try {
+    const r = await anthropic.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 30,
+      messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
+    });
+    res.json({ ok: true, reply: r.content[0]?.text || '(empty)', model: 'claude-opus-4-5' });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
+});
 
 // Debug endpoint — shows env var status without exposing values
 app.get('/api/debug', (req, res) => {
