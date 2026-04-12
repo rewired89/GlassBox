@@ -13,10 +13,14 @@
   }
   document.querySelectorAll('[data-glassbox]').forEach(el => el.remove());
 
+  // ── Hardcoded fallback API URL ─────────────────────────────────────────────────
+  // If chrome.storage is unavailable, this URL is used directly.
+  const HARDCODED_API_URL = 'https://glassbox-production-3db2.up.railway.app';
+
   // ── Settings ──────────────────────────────────────────────────────────────────
   const DEFAULT_SETTINGS = {
     enabled:                  true,
-    apiUrl:                   '',
+    apiUrl:                   HARDCODED_API_URL,
     showContextCards:         true,
     showManipulationIndicators: true,
     showCredibilityBadges:    true,
@@ -27,12 +31,22 @@
   let _settings = null;
   async function getSettings() {
     if (_settings) return _settings;
-    return new Promise(resolve => {
-      chrome.storage.sync.get('glassbox_settings', r => {
-        _settings = { ...DEFAULT_SETTINGS, ...(r.glassbox_settings || {}) };
-        resolve(_settings);
+    try {
+      if (!chrome?.storage?.sync) throw new Error('storage unavailable');
+      return new Promise(resolve => {
+        chrome.storage.sync.get('glassbox_settings', r => {
+          const saved = r?.glassbox_settings || {};
+          _settings = { ...DEFAULT_SETTINGS, ...saved };
+          // Always ensure API URL is set
+          if (!_settings.apiUrl) _settings.apiUrl = HARDCODED_API_URL;
+          resolve(_settings);
+        });
       });
-    });
+    } catch (e) {
+      console.warn('[GlassBox] chrome.storage unavailable — using hardcoded defaults:', e.message);
+      _settings = { ...DEFAULT_SETTINGS };
+      return _settings;
+    }
   }
 
   // ── Platforms ─────────────────────────────────────────────────────────────────
