@@ -576,6 +576,31 @@ app.get('/api/admin/figures/:handle/status', requireAdmin, adminLimit, async (re
   res.json({ handle: fig.handle, name: fig.name, status: fig.research_status, updated_at: fig.updated_at });
 });
 
+// Bulk-seed pre-defined politicians list
+app.post('/api/admin/seed', requireAdmin, adminLimit, async (req, res) => {
+  const listPath = path.join(__dirname, '..', 'data', 'politicians.json');
+  if (!fs.existsSync(listPath)) return res.status(404).json({ error: 'politicians.json not found' });
+  const politicians = JSON.parse(fs.readFileSync(listPath, 'utf8'));
+  const results = [];
+  for (const p of politicians) {
+    const cleanHandles = p.handles.map(h => h.replace(/^@/, '').trim().toLowerCase()).filter(Boolean);
+    const primary = cleanHandles[0];
+    if (!primary) continue;
+    const existing = await store.getFigure(primary);
+    if (existing) { results.push({ name: p.name, status: 'already_exists' }); continue; }
+    await store.setFigure(primary, {
+      handle: primary, all_handles: cleanHandles, name: p.name,
+      role: null, jurisdiction: 'US',
+      biography: {}, legal_proceedings: [], fact_check_discrepancies: [],
+      financial_ties: [], mirror_triggers: [], mirror_note: null,
+      research_status: 'researching',
+    });
+    setImmediate(() => runResearch(p.name, cleanHandles, primary));
+    results.push({ name: p.name, handle: primary, status: 'queued' });
+  }
+  res.json({ total: politicians.length, results });
+});
+
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 
 // ── Research runner ───────────────────────────────────────────────────────────

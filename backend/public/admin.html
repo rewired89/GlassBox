@@ -216,6 +216,7 @@
       <h2>Public Figure Database</h2>
       <div class="topbar-right">
         <button class="btn btn--ghost btn--sm" onclick="loadFigures()">↻ Refresh</button>
+        <button class="btn btn--ghost btn--sm" onclick="seedPoliticians()" title="Bulk-add 30 pre-defined US politicians">🏛️ Seed Politicians</button>
         <button class="btn btn--primary" onclick="openAddModal()">+ Add Figure</button>
       </div>
     </div>
@@ -516,6 +517,22 @@
       preview.style.display = 'none';
     }
   });
+
+  async function seedPoliticians() {
+    if (!confirm('This will queue research for ~30 US politicians. Each takes ~20 seconds. Continue?')) return;
+    try {
+      const r = await fetch('/api/admin/seed', {
+        method: 'POST', headers: { 'x-admin-key': ADMIN_KEY }
+      });
+      const d = await r.json();
+      const queued   = d.results.filter(x => x.status === 'queued').length;
+      const existing = d.results.filter(x => x.status === 'already_exists').length;
+      alert(`✓ Queued ${queued} new politicians for research. (${existing} already existed)\n\nCheck back in a few minutes and refresh.`);
+      loadFigures();
+    } catch (e) {
+      alert('Seed failed: ' + e.message);
+    }
+  }
 
   async function addFigure() {
     const name    = document.getElementById('add-name').value.trim();

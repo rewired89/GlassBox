@@ -49,6 +49,12 @@
     "https://youtube.com/*",
     "https://*/*"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "glassbox@rewired89.com",
+      "strict_min_version": "109.0"
+    }
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   },
