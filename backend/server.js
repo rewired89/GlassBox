@@ -81,13 +81,23 @@ async function initDb() {
 
 // ── Store API (all async) ─────────────────────────────────────────────────────
 const store = {
+  // Look up by primary handle OR any alias stored in data.all_handles
   async getFigure(handle) {
     const h = handle.toLowerCase();
     if (pool) {
-      const r = await pool.query('SELECT data FROM figures WHERE handle=$1', [h]);
+      const r = await pool.query(
+        `SELECT data FROM figures
+         WHERE handle = $1
+            OR data->'all_handles' ? $1`,
+        [h]
+      );
       return r.rows[0]?.data || null;
     }
-    return _json.figures[h] || null;
+    if (_json.figures[h]) return _json.figures[h];
+    // scan aliases in JSON fallback
+    return Object.values(_json.figures).find(f =>
+      Array.isArray(f.all_handles) && f.all_handles.includes(h)
+    ) || null;
   },
 
   async listFigures() {
@@ -516,7 +526,9 @@ app.post('/api/admin/figures', requireAdmin, adminLimit, async (req, res) => {
   console.log(`[add] name="${name.trim()}" handle="${primaryHandle}" allHandles=${JSON.stringify(cleanHandles)}`);
 
   await store.setFigure(primaryHandle, {
-    handle: primaryHandle, name: name.trim(),
+    handle: primaryHandle,
+    all_handles: cleanHandles,   // all aliases — used for lookup
+    name: name.trim(),
     role: null, jurisdiction: 'US',
     biography: {}, legal_proceedings: [], fact_check_discrepancies: [],
     financial_ties: [], mirror_triggers: [], mirror_note: null,
