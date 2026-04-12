@@ -458,14 +458,17 @@
       }
     }
 
+    // Safe reference: null means "append to end of insertPoint"
+    const afterText = textEl?.nextSibling ?? null;
+
     // ── Fact-check banners ────────────────────────────────────────────────────
     for (const fc of (result.fact_checks || []).slice(0, 2)) {
-      insertPoint.insertBefore(renderFactCheckBanner(fc), textEl.nextSibling);
+      insertPoint.insertBefore(renderFactCheckBanner(fc), afterText);
     }
 
     // ── Image concern banner ──────────────────────────────────────────────────
     if (result.image_concerns) {
-      insertPoint.insertBefore(renderImageConcernBanner(result.image_concerns), textEl.nextSibling);
+      insertPoint.insertBefore(renderImageConcernBanner(result.image_concerns), afterText);
     }
 
     // ── Context card ──────────────────────────────────────────────────────────
@@ -473,14 +476,14 @@
       const container = document.createElement('div');
       container.setAttribute('data-glassbox', 'card-container');
       container.appendChild(renderContextCard(result.context_card, result.context_card_id));
-      insertPoint.insertBefore(container, textEl.nextSibling);
+      insertPoint.insertBefore(container, afterText);
     }
 
     // ── Figure card — always show when figure is in the database ─────────────
     if (result.figure) {
       insertPoint.insertBefore(
         renderAccountabilityCard(result.figure, result.resonance),
-        textEl.nextSibling
+        afterText
       );
     }
   }
