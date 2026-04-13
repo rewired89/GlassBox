@@ -37,6 +37,27 @@ Every analyzed post gets a **resonance score** showing the emotional tone:
 
 Clicking the score expands a plain-English description. This helps users recognize *how* someone is talking — because manipulation uses tone as much as it uses false information. Saying something is your personal opinion is valid; the score just makes that visible.
 
+### News Verification Tag
+When a post tells a specific news story or makes verifiable factual claims about a real-world event, GlassBox researches whether the story can be confirmed.
+
+**On Twitter/X** the verification result is combined with the tone score in a single tag:
+
+```
+💬 25% Dismissive / 99% fake
+```
+
+**On TikTok** a standalone label appears near the video caption:
+
+| Tag | Meaning |
+|-----|---------|
+| ✅ Verified | Story confirmed by multiple credible sources (0–29% unverifiability) |
+| ⚠️ Partially Verified | Some details confirmed, others unverified (30–69%) |
+| 🚩 Unverified, possibly fake | No credible sources found to support the story (70–99%) |
+
+**About the 99% score:** GlassBox never scores a story as 100% fake. A score of 99% means no sources could be found to verify the claim, but acknowledges a 1% chance that an obscure or non-indexed source exists somewhere that was not found during research. Ownership of content and truth starts with the person who shares it.
+
+Pure opinions, personal experiences, and jokes are not scored — the tag only appears on posts that make checkable factual claims about real events.
+
 ---
 
 ## Why this exists
@@ -151,12 +172,25 @@ npm run dev          # starts on http://localhost:3001
 
 ---
 
+## Platform support
+
+| Platform | Status | Features |
+|----------|--------|----------|
+| Twitter / X | ✅ Full | Tone score, fake % tag, fact-check banners, public record cards, pre-post reflection |
+| Reddit | ⚠️ Partial | Tone score, fact-check banners |
+| YouTube | ⚠️ Minimal | Comments only |
+| TikTok | ✅ Added | Tone score, fake % tag, Verified / Unverified label near caption |
+| Threads / Bluesky | 🔜 Planned | — |
+
+---
+
 ## Contributing
 
 Pull requests are welcome. Priority areas:
 - Expanding the database beyond US federal politicians
-- Additional platforms: Threads, Bluesky, TikTok, YouTube comments
+- Additional platforms: Threads, Bluesky
 - More data sources for public records research
+- Improve TikTok DOM selectors as TikTok updates its layout
 - Translations and internationalization
 
 ---

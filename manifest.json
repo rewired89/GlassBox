@@ -28,7 +28,9 @@
         "https://www.reddit.com/*",
         "https://reddit.com/*",
         "https://www.youtube.com/*",
-        "https://youtube.com/*"
+        "https://youtube.com/*",
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*"
       ],
       "js": ["content/glassbox.js"],
       "css": ["content/ui/styles.css"],
@@ -47,6 +49,8 @@
     "https://reddit.com/*",
     "https://www.youtube.com/*",
     "https://youtube.com/*",
+    "https://www.tiktok.com/*",
+    "https://tiktok.com/*",
     "https://*/*"
   ],
   "browser_specific_settings": {
@@ -71,7 +75,9 @@
         "https://www.reddit.com/*",
         "https://reddit.com/*",
         "https://www.youtube.com/*",
-        "https://youtube.com/*"
+        "https://youtube.com/*",
+        "https://www.tiktok.com/*",
+        "https://tiktok.com/*"
       ]
     }
   ]

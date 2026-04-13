@@ -242,11 +242,21 @@ Return ONLY valid JSON — no markdown, no explanation:
   "resonance_affect": 0-100,
   "context_card_topic": "one of: mmiwg_indigenous_women|native_american_indigeneity|climate_change_consensus|immigration_history|vaccine_safety|election_integrity|lgbtq_history|systemic_racism|harmful_language_impact — or null",
   "fact_checks": [{ "claim": "exact claim", "verdict": "what evidence shows", "source": "source name", "source_url": "url or null" }],
-  "image_concerns": "description or null"
+  "image_concerns": "description or null",
+  "news_verification_score": null,
+  "news_verification_label": null,
+  "news_sources_checked": []
 }
 
 Resonance guide: 70-100=empathetic/constructive, 50-69=neutral/factual, 30-49=dismissive/sarcastic, 0-29=hostile/dehumanizing.
-Only flag: specific false factual claims contradicted by overwhelming documented evidence, or explicit dehumanization of groups. Do NOT flag opinions, policy disagreements, or criticism.` });
+Only flag: specific false factual claims contradicted by overwhelming documented evidence, or explicit dehumanization of groups. Do NOT flag opinions, policy disagreements, or criticism.
+
+News verification guide (for news_verification_score / news_verification_label / news_sources_checked):
+- ONLY populate these fields if the post tells a specific news story, references a real-world event or incident, or makes verifiable factual claims about something that happened.
+- Leave all three as null / [] for pure opinions, jokes, rants, personal statements, or content with no checkable facts.
+- Score 0–99 (never 100): 0=fully confirmed by multiple credible sources, 1–29=mostly verified with minor gaps, 30–69=partially verifiable, 70–98=mostly unverifiable or contradicted, 99=completely unverifiable (99 not 100 because a 1% chance remains that an obscure source exists).
+- Label: "Verified" for 0–29, "Partially Verified" for 30–69, "Unverified, possibly fake" for 70–99.
+- news_sources_checked: list the names of sources or databases you consulted or would consult to verify (e.g. "Reuters", "AP News", "PubMed", "Snopes").` });
 
   const resp = await anthropic.messages.create({
     model: 'claude-opus-4-5',
@@ -480,6 +490,7 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
       : null;
 
     const COLORS = { Empathetic: '#22c55e', Neutral: '#9ca3af', Dismissive: '#f59e0b', Hostile: '#ef4444' };
+    const nvScore = ai.news_verification_score;
     const result = {
       flagged:         ai.flagged           || false,
       flag_reason:     ai.flag_reason       || null,
@@ -494,6 +505,12 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
       context_card_id: ai.context_card_topic || null,
       fact_checks:     ai.fact_checks        || [],
       image_concerns:  ai.image_concerns     || null,
+      news_verification: (nvScore !== null && nvScore !== undefined) ? {
+        score:           nvScore,
+        label:           ai.news_verification_label ||
+                           (nvScore < 30 ? 'Verified' : nvScore < 70 ? 'Partially Verified' : 'Unverified, possibly fake'),
+        sources_checked: ai.news_sources_checked || [],
+      } : null,
       figure: figure ? {
         name:                     figure.name,
         role:                     figure.role,

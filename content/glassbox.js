@@ -81,6 +81,19 @@
       composeSel:   null,
       submitBtns:   [],
     },
+    tiktok: {
+      test:         () => /tiktok\.com/.test(location.hostname),
+      // Feed items on For You page, individual video browse page
+      postSel:      'div[data-e2e="recommend-list-item-container"], div[data-e2e="browse-video-container"]',
+      // Video caption/description — multiple selectors for different page layouts
+      textSel:      'h1[data-e2e="browse-video-desc"], div[data-e2e="video-desc"], span[data-e2e="video-desc-title"]',
+      // Right-side action bar (like/comment/share buttons)
+      actionSel:    'div[data-e2e="action-bar"]',
+      authorSel:    'a[data-e2e="video-author-uniqueid"], a[data-e2e="browse-username"]',
+      imgSel:       null,
+      composeSel:   null,
+      submitBtns:   [],
+    },
   };
 
   const PLATFORM = Object.entries(PLATFORMS).find(([, p]) => p.test());
@@ -166,7 +179,7 @@
     Hostile:    'Aggressive or dehumanizing. Designed to provoke fear or anger.',
   };
 
-  function renderResonanceIndicator(resonance) {
+  function renderResonanceIndicator(resonance, newsVerification) {
     const label = resonance.label || 'Neutral';
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
     const icon  = resonance.score < 35 ? '💢' : (resonance.score < 50 ? '⚠️' : '💬');
@@ -178,12 +191,40 @@
     const btn = document.createElement('button');
     btn.className = 'gb-resonance';
     btn.style.cssText = `color:${resonance.color};border-color:${resonance.color}33;background:${resonance.color}11`;
-    btn.textContent = `${icon} ${resonance.score}% ${label}`;
+
+    // Tone portion — always present
+    const toneSpan = document.createElement('span');
+    toneSpan.textContent = `${icon} ${resonance.score}% ${label}`;
+    btn.appendChild(toneSpan);
+
+    // Fake-news portion — only when the API returned verification data
+    if (newsVerification && newsVerification.label) {
+      const fakeScore = newsVerification.score;
+      const fakeColor = fakeScore < 30 ? '#22c55e' : (fakeScore < 70 ? '#f59e0b' : '#ef4444');
+      const sep = document.createElement('span');
+      sep.textContent = ' / ';
+      sep.style.color = '#9ca3af';
+      btn.appendChild(sep);
+      const fakeSpan = document.createElement('span');
+      fakeSpan.textContent = `${fakeScore}% fake`;
+      fakeSpan.style.color = fakeColor;
+      btn.appendChild(fakeSpan);
+    }
 
     const detail = document.createElement('div');
     detail.className = 'gb-resonance-detail';
-    detail.style.cssText = `display:none;font-size:11px;color:${resonance.color};padding:3px 6px;border-radius:4px;background:${resonance.color}11;max-width:220px;line-height:1.4`;
-    detail.textContent = desc;
+    detail.style.cssText = `display:none;font-size:11px;color:${resonance.color};padding:3px 6px;border-radius:4px;background:${resonance.color}11;max-width:240px;line-height:1.4`;
+
+    let detailText = desc;
+    if (newsVerification && newsVerification.label) {
+      const nvScore = newsVerification.score;
+      const nvLabel = newsVerification.label;
+      detailText += ` | News: ${nvLabel}`;
+      if (nvScore >= 70) detailText += ' — No credible sources found to verify this story.';
+      else if (nvScore >= 30) detailText += ' — Story partially verifiable; some details unconfirmed.';
+      else detailText += ' — Confirmed by credible sources.';
+    }
+    detail.textContent = detailText;
 
     btn.addEventListener('click', e => {
       e.stopPropagation(); e.preventDefault();
@@ -193,6 +234,53 @@
     wrap.appendChild(btn);
     wrap.appendChild(detail);
     return wrap;
+  }
+
+  /**
+   * Standalone news-verification tag — used on TikTok and any platform where
+   * we want a visible "Verified / Unverified, possibly fake" label.
+   */
+  function renderNewsVerificationTag(newsVerification) {
+    const score = newsVerification.score;
+    let icon, text, color;
+    if (score < 30) {
+      icon = '✅'; text = 'Verified';                   color = '#22c55e';
+    } else if (score < 70) {
+      icon = '⚠️'; text = 'Partially Verified';         color = '#f59e0b';
+    } else {
+      icon = '🚩'; text = 'Unverified, possibly fake';  color = '#ef4444';
+    }
+
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'news-verification-tag');
+    el.style.cssText = [
+      'display:inline-flex', 'align-items:center', 'gap:4px',
+      `padding:3px 8px`, 'border-radius:4px',
+      'font-size:11px', 'font-weight:600', 'font-family:sans-serif',
+      `color:${color}`, `background:${color}1a`, `border:1px solid ${color}44`,
+      'cursor:default', 'margin-top:4px',
+    ].join(';');
+
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = icon;
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+
+    const scoreNote = document.createElement('span');
+    scoreNote.style.cssText = 'font-size:10px;opacity:0.7;font-weight:400';
+    scoreNote.textContent = ` (${score}% unverified)`;
+
+    el.appendChild(iconSpan);
+    el.appendChild(textSpan);
+    el.appendChild(scoreNote);
+
+    // Tooltip: explain the 99% case
+    const tip = score >= 99
+      ? 'GlassBox could not find any sources for this story. A 1% chance remains that an obscure source exists but was not found.'
+      : `GlassBox news verification — ${newsVerification.label}. Score: ${score}/99.`;
+    el.title = tip;
+
+    return el;
   }
 
   function renderFactCheckBanner(fc) {
@@ -483,8 +571,20 @@
         const row = document.createElement('div');
         row.setAttribute('data-glassbox', 'annotation-row');
         row.className = 'gb-post-annotation';
-        row.appendChild(renderResonanceIndicator(result.resonance));
+        // Pass news_verification so Twitter score shows "25% Dismissive / 99% fake"
+        row.appendChild(renderResonanceIndicator(result.resonance, result.news_verification));
+        // On TikTok also show the standalone Verified / Unverified tag
+        if (platformName === 'tiktok' && result.news_verification?.label) {
+          row.appendChild(renderNewsVerificationTag(result.news_verification));
+        }
         actionBar.appendChild(row);
+      }
+    }
+
+    // ── Standalone news-verification tag (TikTok: inject near caption) ──────────
+    if (platformName === 'tiktok' && result.news_verification?.label) {
+      if (!insertPoint.querySelector('[data-glassbox="news-verification-tag"]')) {
+        insertPoint.insertBefore(renderNewsVerificationTag(result.news_verification), afterText);
       }
     }
 
