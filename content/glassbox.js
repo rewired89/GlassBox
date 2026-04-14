@@ -131,11 +131,16 @@
   }
 
   function getImageUrls(postEl) {
-    if (!platform.imgSel) return [];
-    return Array.from(postEl.querySelectorAll(platform.imgSel))
-      .map(img => img.src || img.getAttribute('src'))
-      .filter(src => src && src.startsWith('https://'))
-      .slice(0, 3);
+    const imgs = platform.imgSel
+      ? Array.from(postEl.querySelectorAll(platform.imgSel))
+          .map(img => img.src || img.getAttribute('src'))
+          .filter(src => src && src.startsWith('https://'))
+      : [];
+    // Also grab video poster frames — lets AI-detection run on video thumbnails
+    const posters = Array.from(postEl.querySelectorAll('video[poster]'))
+      .map(v => v.getAttribute('poster'))
+      .filter(src => src && src.startsWith('https://'));
+    return [...imgs, ...posters].slice(0, 3);
   }
 
   // ── API client ────────────────────────────────────────────────────────────────
@@ -297,6 +302,53 @@
     wrap.appendChild(btn);
     wrap.appendChild(detail);
     return wrap;
+  }
+
+  /**
+   * AI-generated content banner.
+   * Shows when Claude detects a medium/high-confidence AI image in the post.
+   */
+  function renderAiContentTag(aiDetection) {
+    const color = aiDetection.confidence === 'high' ? '#8b5cf6' : '#6366f1';
+    const confidenceLabel = aiDetection.confidence === 'high' ? 'High confidence' : 'Likely AI-generated';
+
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'ai-detection');
+    el.className = 'gb-factcheck';
+    el.style.cssText = `border-left-color:${color};background:${color}0d;`;
+
+    const header = document.createElement('div');
+    header.className = 'gb-factcheck__header';
+
+    const icon = document.createElement('span');
+    icon.className = 'gb-factcheck__icon';
+    icon.textContent = '🤖';
+
+    const title = document.createElement('span');
+    title.className = 'gb-factcheck__title';
+    title.style.color = color;
+    title.textContent = 'AI-Generated Content';
+
+    const badge = document.createElement('span');
+    badge.className = 'gb-factcheck__verdict';
+    badge.style.color = color;
+    badge.textContent = confidenceLabel;
+
+    header.appendChild(icon);
+    header.appendChild(title);
+    header.appendChild(badge);
+    el.appendChild(header);
+
+    const signals = (aiDetection.signals || []).slice(0, 2);
+    if (signals.length) {
+      const detail = document.createElement('div');
+      detail.className = 'gb-factcheck__claim';
+      detail.style.color = '#9ca3af';
+      detail.textContent = signals.join(' · ');
+      el.appendChild(detail);
+    }
+
+    return el;
   }
 
   /**
@@ -664,6 +716,11 @@
       insertPoint.insertBefore(renderImageConcernBanner(result.image_concerns), afterText);
     }
 
+    // ── AI-generated content tag ──────────────────────────────────────────────
+    if (result.ai_generated?.detected && result.ai_generated.confidence !== 'low') {
+      insertPoint.insertBefore(renderAiContentTag(result.ai_generated), afterText);
+    }
+
     // ── Context card ──────────────────────────────────────────────────────────
     if (settings.showContextCards && result.flagged && result.context_card) {
       const container = document.createElement('div');
@@ -682,14 +739,19 @@
   }
 
   // ── Twitter compose gate ──────────────────────────────────────────────────────
+  // Module-level flag — survives Twitter re-rendering the button DOM element.
+  // Storing the flag on btn.dataset fails because Twitter creates a brand-new
+  // <button> element after every modal open/close, losing the flag each time.
+  // This closure variable persists for the lifetime of the content script so
+  // "Post anyway → press Post once more" always takes exactly 2 presses total.
+  let _composeWarned = false;
+  let _composeWarnedTimer = null;
+
   function hookComposeBtn(btn) {
     if (btn.dataset.gbHooked) return;
     btn.dataset.gbHooked = '1';
     btn.addEventListener('pointerdown', e => {
-      // If the user already acknowledged the warning, let the next natural press through.
-      // This fixes the bug where btn.click() (isTrusted:false) was ignored by Twitter,
-      // requiring the user to press Post 5+ times. Now: 1st press = modal, 2nd = posts.
-      if (btn.dataset.gbWarned) return;
+      if (_composeWarned) return; // already acknowledged — let it through
 
       const area = document.querySelector(platform.composeSel);
       if (!area) return;
@@ -703,10 +765,13 @@
       showReflectionModal({
         postText: text,
         onProceed: () => {
-          // Mark button approved — the user's very next press goes straight through.
-          // Expires after 60 s so re-edits can still be caught.
-          btn.dataset.gbWarned = '1';
-          setTimeout(() => delete btn.dataset.gbWarned, 60_000);
+          _composeWarned = true;
+          if (_composeWarnedTimer) clearTimeout(_composeWarnedTimer);
+          // Auto-reset after 60 s so a heavily-edited follow-up post is still checked.
+          _composeWarnedTimer = setTimeout(() => {
+            _composeWarned = false;
+            _composeWarnedTimer = null;
+          }, 60_000);
         },
         onCancel: () => {},
       });

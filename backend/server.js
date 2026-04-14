@@ -219,7 +219,14 @@ Mirror note: ${figure.mirror_note || 'none'}` : '';
 
   const content = [];
   for (const url of (imageUrls || []).slice(0, 3)) {
-    if (/^https:\/\/.+\.(jpg|jpeg|png|gif|webp)/i.test(url)) {
+    // Accept Twitter CDN (format= query param), Reddit, Imgur, and standard extension URLs
+    const looksLikeImage =
+      /^https:\/\/pbs\.twimg\.com\//.test(url) ||
+      /^https:\/\/i\.redd\.it\//.test(url) ||
+      /^https:\/\/preview\.redd\.it\//.test(url) ||
+      /[?&]format=(jpg|jpeg|png|gif|webp)/i.test(url) ||
+      /^https:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
+    if (looksLikeImage) {
       content.push({ type: 'image', source: { type: 'url', url } });
     }
   }
@@ -246,7 +253,8 @@ Return ONLY valid JSON — no markdown, no explanation:
   "news_verification_score": null,
   "news_verification_label": null,
   "news_sources_checked": [],
-  "manipulation_tactic": null
+  "manipulation_tactic": null,
+  "ai_generated": { "detected": false, "confidence": "none", "signals": [] }
 }
 
 Resonance guide: 70-100=empathetic/constructive, 50-69=neutral/factual, 30-49=dismissive/sarcastic, 0-29=hostile/dehumanizing.
@@ -274,7 +282,15 @@ Manipulation tactic guide (for manipulation_tactic):
   "Bandwagon" (claims popularity as proof of truth) → "Extraordinary Popular Delusions" by Charles Mackay
   "False Dichotomy" (presents only two options when more exist) → "The Art of Thinking Clearly" by Rolf Dobelli
   "Cherry-Picked Data" (selects only evidence that supports the conclusion) → "Bad Science" by Ben Goldacre
-  "Slippery Slope" (claims one step inevitably leads to extreme outcomes without evidence) → "How Minds Change" by David McRaney` });
+  "Slippery Slope" (claims one step inevitably leads to extreme outcomes without evidence) → "How Minds Change" by David McRaney
+
+AI-generated content detection (ai_generated field):
+- Examine every image attached to this request for signs of AI generation.
+- detected: true if any image appears AI-generated or digitally manipulated.
+- confidence: "high" = clear AI artifacts; "medium" = likely AI; "low" = uncertain; "none" = natural photo or no images.
+- signals: up to 3 specific observations (e.g. "anatomically impossible hand placement", "uniform noise-free skin texture consistent with diffusion models", "subject placed in implausible real-world scenario", "Midjourney/DALL-E watermark pattern", "lighting direction inconsistent with scene shadows", "public figure shown in fabricated context").
+- If no images were provided, return detected:false, confidence:"none", signals:[].
+- Return detected:false for clearly genuine photographs even if the scene looks staged.` });
 
   const resp = await anthropic.messages.create({
     model: 'claude-opus-4-5',
@@ -530,6 +546,9 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
         sources_checked: ai.news_sources_checked || [],
       } : null,
       manipulation_tactic: ai.manipulation_tactic || null,
+      ai_generated: (ai.ai_generated?.detected)
+        ? { detected: true, confidence: ai.ai_generated.confidence || 'medium', signals: ai.ai_generated.signals || [] }
+        : null,
       figure: figure ? {
         name:                     figure.name,
         role:                     figure.role,
