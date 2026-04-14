@@ -329,7 +329,7 @@
     if (signals.length) {
       const detail = document.createElement('div');
       detail.className = 'gb-factcheck__claim';
-      detail.style.color = '#9ca3af';
+      detail.style.color = '#374151';
       detail.textContent = signals.join(' · ');
       el.appendChild(detail);
     }
@@ -663,6 +663,9 @@
     const insertPoint = textEl?.parentElement ?? postEl.querySelector('[data-testid="tweetText"]')?.closest('div') ?? postEl;
     if (!insertPoint) return;
 
+    // Safe reference: null means "append to end of insertPoint"
+    const afterText = textEl?.nextSibling ?? null;
+
     // ── Resonance banner — standalone, below tweet text, always visible ──────────
     // No longer placed inside the action bar or the card header.
     // The score is shown as the first thing below the post so readers
@@ -680,9 +683,6 @@
         insertPoint.insertBefore(renderNewsVerificationTag(result.news_verification), afterText);
       }
     }
-
-    // Safe reference: null means "append to end of insertPoint"
-    const afterText = textEl?.nextSibling ?? null;
 
     // ── Fact-check banners ────────────────────────────────────────────────────
     for (const fc of (result.fact_checks || []).slice(0, 2)) {
