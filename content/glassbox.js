@@ -204,11 +204,17 @@
     const displayPct  = isNegative ? (100 - resonance.score) : resonance.score;
     const scoreIcon   = label === 'Hostile' ? '💢' : label === 'Dismissive' ? '⚠️' : label === 'Neutral' ? '💬' : '✅';
 
+    // All text in the banner uses near-black (#111827) so it's readable
+    // on any colored tint background. Color is reserved for the left border
+    // accent and the background tint only — never for body text.
+    const TEXT    = '#111827';  // near-black — readable on any tint
+    const SUBTEXT = '#374151';  // dark grey for secondary lines
+
     const el = document.createElement('div');
     el.setAttribute('data-glassbox', 'resonance-banner');
     el.style.cssText = [
       `border-left:3px solid ${resonance.color}`,
-      `background:${resonance.color}0d`,
+      `background:${resonance.color}18`,  // slightly stronger tint for visual grouping
       'border-radius:0 8px 8px 0',
       'padding:9px 13px',
       'margin:6px 0',
@@ -221,12 +227,13 @@
     scoreRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;';
 
     const scoreEl = document.createElement('span');
-    scoreEl.style.cssText = `color:${resonance.color};font-weight:700;font-size:13px;white-space:nowrap;`;
+    // Score text is always black — colored border on left already signals severity
+    scoreEl.style.cssText = `color:${TEXT};font-weight:700;font-size:13px;white-space:nowrap;`;
     scoreEl.textContent = `${scoreIcon} ${displayPct}% ${label}`;
     scoreRow.appendChild(scoreEl);
 
     const descEl = document.createElement('span');
-    descEl.style.cssText = 'color:#9ca3af;font-size:11px;';
+    descEl.style.cssText = `color:${SUBTEXT};font-size:11px;`;
     descEl.textContent = desc;
     scoreRow.appendChild(descEl);
     el.appendChild(scoreRow);
@@ -234,13 +241,12 @@
     // ── News verification (if present) ────────────────────────────────────────
     if (newsVerification?.label) {
       const nvScore = newsVerification.score;
-      const nvColor = nvScore < 30 ? '#22c55e' : nvScore < 70 ? '#f59e0b' : '#ef4444';
       const nvIcon  = nvScore < 30 ? '✅' : nvScore < 70 ? '⚠️' : '🚩';
       const nvNote  = nvScore >= 70 ? 'No credible sources found.'
                     : nvScore >= 30 ? 'Partially verifiable; some details unconfirmed.'
                     : 'Confirmed by credible sources.';
       const nvEl = document.createElement('div');
-      nvEl.style.cssText = `color:${nvColor};font-size:11px;margin-top:4px;`;
+      nvEl.style.cssText = `color:${TEXT};font-size:11px;margin-top:4px;`;
       nvEl.textContent = `${nvIcon} ${newsVerification.label} (${nvScore}%) — ${nvNote}`;
       el.appendChild(nvEl);
     }
@@ -248,25 +254,26 @@
     // ── Manipulation tactic + book recommendation (if present) ─────────────────
     if (manipulationTactic) {
       const sep = document.createElement('div');
-      sep.style.cssText = 'border-top:1px solid #2f3241;margin-top:7px;padding-top:7px;';
+      sep.style.cssText = `border-top:1px solid ${resonance.color}44;margin-top:7px;padding-top:7px;`;
 
       const tacticLine = document.createElement('div');
       tacticLine.style.cssText = 'font-size:11px;';
       const nameSpan = document.createElement('span');
-      nameSpan.style.cssText = 'color:#f59e0b;font-weight:600;';
+      // Tactic name uses bold black — the ⚠️ emoji already signals warning
+      nameSpan.style.cssText = `color:${TEXT};font-weight:700;`;
       nameSpan.textContent = `⚠️ ${manipulationTactic.name}`;
       const dashSpan = document.createElement('span');
-      dashSpan.style.cssText = 'color:#9ca3af;margin-left:5px;';
+      dashSpan.style.cssText = `color:${SUBTEXT};margin-left:5px;`;
       dashSpan.textContent = `— ${manipulationTactic.description}`;
       tacticLine.appendChild(nameSpan);
       tacticLine.appendChild(dashSpan);
       sep.appendChild(tacticLine);
 
       const bookLine = document.createElement('div');
-      bookLine.style.cssText = 'font-size:10px;color:#6b7280;margin-top:3px;';
+      bookLine.style.cssText = `font-size:10px;color:${SUBTEXT};margin-top:3px;`;
       const bookIcon  = document.createTextNode('📚 ');
       const bookBold  = document.createElement('strong');
-      bookBold.style.color = '#9ca3af';
+      bookBold.style.color = TEXT;
       bookBold.textContent = 'Read: ';
       const bookTitle = document.createElement('em');
       bookTitle.textContent = `"${manipulationTactic.book_title}"`;
