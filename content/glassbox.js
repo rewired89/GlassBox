@@ -195,71 +195,81 @@
    * a high percentage:  resonance 18 (Hostile) → displayed as "82% Hostile"
    *                     resonance 82 (Empathetic) → displayed as "82% Empathetic"
    */
+  /**
+   * Resonance tag — compact pill by default. Click to expand full detail.
+   * Clicking NEVER navigates to the tweet (stopPropagation + preventDefault).
+   *
+   * Collapsed:  [⚠️ 65% Dismissive ▼]
+   * Expanded:   tone description
+   *             ⚠️ Missing Context — explanation of the tactic used here
+   *             📚 Read: "Manufacturing Consent" — Noam Chomsky
+   *             🚩 Unverified, possibly fake (70%) — No credible sources found.
+   */
   function renderResonanceBanner(resonance, newsVerification, manipulationTactic) {
     const label = resonance.label || 'Neutral';
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
 
-    // Invert score for hostile/dismissive so that high % = extreme bad behaviour
-    const isNegative  = label === 'Hostile' || label === 'Dismissive';
-    const displayPct  = isNegative ? (100 - resonance.score) : resonance.score;
-    const scoreIcon   = label === 'Hostile' ? '💢' : label === 'Dismissive' ? '⚠️' : label === 'Neutral' ? '💬' : '✅';
+    const isNegative = label === 'Hostile' || label === 'Dismissive';
+    const displayPct = isNegative ? (100 - resonance.score) : resonance.score;
+    const scoreIcon  = label === 'Hostile' ? '💢' : label === 'Dismissive' ? '⚠️' : label === 'Neutral' ? '💬' : '✅';
 
-    // All text in the banner uses near-black (#111827) so it's readable
-    // on any colored tint background. Color is reserved for the left border
-    // accent and the background tint only — never for body text.
-    const TEXT    = '#111827';  // near-black — readable on any tint
-    const SUBTEXT = '#374151';  // dark grey for secondary lines
+    const TEXT    = '#111827';
+    const SUBTEXT = '#374151';
+    const FF      = 'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
 
+    // ── Wrapper ──────────────────────────────────────────────────────────────
     const el = document.createElement('div');
     el.setAttribute('data-glassbox', 'resonance-banner');
-    el.style.cssText = [
+    el.style.cssText = `${FF};margin:4px 0;display:inline-block;max-width:100%;`;
+
+    // ── Compact pill (always visible) ────────────────────────────────────────
+    const trigger = document.createElement('div');
+    trigger.style.cssText = [
+      'display:inline-flex', 'align-items:center', 'gap:5px',
       `border-left:3px solid ${resonance.color}`,
-      `background:${resonance.color}18`,  // slightly stronger tint for visual grouping
-      'border-radius:0 8px 8px 0',
-      'padding:9px 13px',
-      'margin:6px 0',
-      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
-      'line-height:1.5',
+      `background:${resonance.color}18`,
+      'border-radius:0 4px 4px 0',
+      'padding:3px 9px 3px 7px',
+      'cursor:pointer', 'user-select:none',
     ].join(';');
 
-    // ── Score + description (always visible) ──────────────────────────────────
-    const scoreRow = document.createElement('div');
-    scoreRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;';
+    const scoreSpan = document.createElement('span');
+    scoreSpan.style.cssText = `color:${TEXT};font-weight:700;font-size:12px;white-space:nowrap;`;
+    scoreSpan.textContent = `${scoreIcon} ${displayPct}% ${label}`;
 
-    const scoreEl = document.createElement('span');
-    // Score text is always black — colored border on left already signals severity
-    scoreEl.style.cssText = `color:${TEXT};font-weight:700;font-size:13px;white-space:nowrap;`;
-    scoreEl.textContent = `${scoreIcon} ${displayPct}% ${label}`;
-    scoreRow.appendChild(scoreEl);
+    const arrow = document.createElement('span');
+    arrow.style.cssText = `color:${SUBTEXT};font-size:9px;margin-left:2px;`;
+    arrow.textContent = '▼';
 
-    const descEl = document.createElement('span');
-    descEl.style.cssText = `color:${SUBTEXT};font-size:11px;`;
+    trigger.appendChild(scoreSpan);
+    trigger.appendChild(arrow);
+
+    // ── Expanded detail (hidden by default) ──────────────────────────────────
+    const body = document.createElement('div');
+    body.style.cssText = [
+      'display:none',
+      `border-left:3px solid ${resonance.color}`,
+      `background:${resonance.color}18`,
+      'border-radius:0 0 6px 0',
+      'padding:8px 12px',
+      'margin-top:1px',
+      `${FF}`, 'line-height:1.5',
+    ].join(';');
+
+    // Tone description
+    const descEl = document.createElement('div');
+    descEl.style.cssText = `color:${SUBTEXT};font-size:11px;margin-bottom:4px;`;
     descEl.textContent = desc;
-    scoreRow.appendChild(descEl);
-    el.appendChild(scoreRow);
+    body.appendChild(descEl);
 
-    // ── News verification (if present) ────────────────────────────────────────
-    if (newsVerification?.label) {
-      const nvScore = newsVerification.score;
-      const nvIcon  = nvScore < 30 ? '✅' : nvScore < 70 ? '⚠️' : '🚩';
-      const nvNote  = nvScore >= 70 ? 'No credible sources found.'
-                    : nvScore >= 30 ? 'Partially verifiable; some details unconfirmed.'
-                    : 'Confirmed by credible sources.';
-      const nvEl = document.createElement('div');
-      nvEl.style.cssText = `color:${TEXT};font-size:11px;margin-top:4px;`;
-      nvEl.textContent = `${nvIcon} ${newsVerification.label} (${nvScore}%) — ${nvNote}`;
-      el.appendChild(nvEl);
-    }
-
-    // ── Manipulation tactic + book recommendation (if present) ─────────────────
+    // Manipulation tactic + book recommendation
     if (manipulationTactic) {
-      const sep = document.createElement('div');
-      sep.style.cssText = `border-top:1px solid ${resonance.color}44;margin-top:7px;padding-top:7px;`;
+      const tacticWrap = document.createElement('div');
+      tacticWrap.style.cssText = `border-top:1px solid ${resonance.color}44;padding-top:6px;margin-top:6px;`;
 
       const tacticLine = document.createElement('div');
       tacticLine.style.cssText = 'font-size:11px;';
       const nameSpan = document.createElement('span');
-      // Tactic name uses bold black — the ⚠️ emoji already signals warning
       nameSpan.style.cssText = `color:${TEXT};font-weight:700;`;
       nameSpan.textContent = `⚠️ ${manipulationTactic.name}`;
       const dashSpan = document.createElement('span');
@@ -267,26 +277,48 @@
       dashSpan.textContent = `— ${manipulationTactic.description}`;
       tacticLine.appendChild(nameSpan);
       tacticLine.appendChild(dashSpan);
-      sep.appendChild(tacticLine);
+      tacticWrap.appendChild(tacticLine);
 
       const bookLine = document.createElement('div');
-      bookLine.style.cssText = `font-size:10px;color:${SUBTEXT};margin-top:3px;`;
-      const bookIcon  = document.createTextNode('📚 ');
-      const bookBold  = document.createElement('strong');
+      bookLine.style.cssText = `font-size:10px;color:${SUBTEXT};margin-top:4px;`;
+      const bookBold = document.createElement('strong');
       bookBold.style.color = TEXT;
-      bookBold.textContent = 'Read: ';
+      bookBold.textContent = '📚 Read: ';
       const bookTitle = document.createElement('em');
       bookTitle.textContent = `"${manipulationTactic.book_title}"`;
-      const bookAuth  = document.createTextNode(` — ${manipulationTactic.book_author}`);
-      bookLine.appendChild(bookIcon);
+      const bookAuth = document.createTextNode(` — ${manipulationTactic.book_author}`);
       bookLine.appendChild(bookBold);
       bookLine.appendChild(bookTitle);
       bookLine.appendChild(bookAuth);
-      sep.appendChild(bookLine);
+      tacticWrap.appendChild(bookLine);
 
-      el.appendChild(sep);
+      body.appendChild(tacticWrap);
     }
 
+    // News verification
+    if (newsVerification?.label) {
+      const nvScore = newsVerification.score;
+      const nvIcon  = nvScore < 30 ? '✅' : nvScore < 70 ? '⚠️' : '🚩';
+      const nvNote  = nvScore >= 70 ? 'No credible sources found.'
+                    : nvScore >= 30 ? 'Partially verifiable; some details unconfirmed.'
+                    : 'Confirmed by credible sources.';
+      const nvEl = document.createElement('div');
+      nvEl.style.cssText = `color:${TEXT};font-size:11px;margin-top:6px;border-top:1px solid ${resonance.color}44;padding-top:6px;`;
+      nvEl.textContent = `${nvIcon} ${newsVerification.label} (${nvScore}%) — ${nvNote}`;
+      body.appendChild(nvEl);
+    }
+
+    // ── Toggle on click — never lets the click reach Twitter ─────────────────
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      e.preventDefault();
+      const open = body.style.display !== 'none';
+      body.style.display = open ? 'none' : 'block';
+      arrow.textContent  = open ? '▼' : '▲';
+    });
+
+    el.appendChild(trigger);
+    el.appendChild(body);
     return el;
   }
 
@@ -334,6 +366,7 @@
       el.appendChild(detail);
     }
 
+    el.addEventListener('click', e => e.stopPropagation());
     return el;
   }
 
@@ -380,7 +413,7 @@
       ? 'GlassBox could not find any sources for this story. A 1% chance remains that an obscure source exists but was not found.'
       : `GlassBox news verification — ${newsVerification.label}. Score: ${score}/99.`;
     el.title = tip;
-
+    el.addEventListener('click', e => e.stopPropagation());
     return el;
   }
 
@@ -398,6 +431,8 @@
       ${fc.source_url
         ? `<a class="gb-factcheck__source" href="${escHTML(fc.source_url)}" target="_blank" rel="noopener noreferrer">📄 ${escHTML(fc.source)}</a>`
         : (fc.source ? `<span class="gb-factcheck__source">${escHTML(fc.source)}</span>` : '')}`;
+    // Prevent click from bubbling to Twitter and navigating to the tweet
+    el.addEventListener('click', e => e.stopPropagation());
     return el;
   }
 
@@ -587,6 +622,7 @@
         <span class="gb-factcheck__title">Image Context</span>
       </div>
       <div class="gb-factcheck__claim">${escHTML(concern)}</div>`;
+    el.addEventListener('click', e => e.stopPropagation());
     return el;
   }
 
