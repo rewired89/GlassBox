@@ -245,7 +245,8 @@ Return ONLY valid JSON — no markdown, no explanation:
   "image_concerns": "description or null",
   "news_verification_score": null,
   "news_verification_label": null,
-  "news_sources_checked": []
+  "news_sources_checked": [],
+  "manipulation_tactic": null
 }
 
 Resonance guide: 70-100=empathetic/constructive, 50-69=neutral/factual, 30-49=dismissive/sarcastic, 0-29=hostile/dehumanizing.
@@ -256,7 +257,24 @@ News verification guide (for news_verification_score / news_verification_label /
 - Leave all three as null / [] for pure opinions, jokes, rants, personal statements, or content with no checkable facts.
 - Score 0–99 (never 100): 0=fully confirmed by multiple credible sources, 1–29=mostly verified with minor gaps, 30–69=partially verifiable, 70–98=mostly unverifiable or contradicted, 99=completely unverifiable (99 not 100 because a 1% chance remains that an obscure source exists).
 - Label: "Verified" for 0–29, "Partially Verified" for 30–69, "Unverified, possibly fake" for 70–99.
-- news_sources_checked: list the names of sources or databases you consulted or would consult to verify (e.g. "Reuters", "AP News", "PubMed", "Snopes").` });
+- news_sources_checked: list the names of sources or databases you consulted or would consult to verify (e.g. "Reuters", "AP News", "PubMed", "Snopes").
+
+Manipulation tactic guide (for manipulation_tactic):
+- ONLY populate if one dominant rhetorical manipulation tactic is clearly central to the post — not incidental.
+- Return null for constructive criticism, blunt-but-honest posts, or posts defending documented victims of harm.
+- When detected, return: {"name":"<tactic>","description":"<1 sentence plain-English explanation of how it is used here>","book_title":"<book>","book_author":"<author>"}
+- Use EXACTLY these tactic names and paired book recommendations:
+  "Semantic Deflection" (argues about word choice or framing to avoid addressing the real issue) → "Thank You for Arguing" by Jay Heinrichs
+  "Fear-Mongering" (exaggerates threats to provoke panic rather than inform) → "The True Believer" by Eric Hoffer
+  "Emotional Manipulation" (exploits feelings as a substitute for evidence) → "Influence" by Robert Cialdini
+  "Conspiracy Framing" (presents unverified speculation as hidden truth) → "Calling Bullshit" by Carl T. Bergstrom & Jevin D. West
+  "Dehumanizing Language" (reduces people to sub-human categories) → "Less Than Human" by David Livingstone Smith
+  "Ad Hominem" (attacks the person to avoid engaging with their argument) → "How to Win Every Argument" by Madsen Pirie
+  "Missing Context" (omits facts that would change the audience's conclusion) → "Manufacturing Consent" by Noam Chomsky & Edward S. Herman
+  "Bandwagon" (claims popularity as proof of truth) → "Extraordinary Popular Delusions" by Charles Mackay
+  "False Dichotomy" (presents only two options when more exist) → "The Art of Thinking Clearly" by Rolf Dobelli
+  "Cherry-Picked Data" (selects only evidence that supports the conclusion) → "Bad Science" by Ben Goldacre
+  "Slippery Slope" (claims one step inevitably leads to extreme outcomes without evidence) → "How Minds Change" by David McRaney` });
 
   const resp = await anthropic.messages.create({
     model: 'claude-opus-4-5',
@@ -511,6 +529,7 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
                            (nvScore < 30 ? 'Verified' : nvScore < 70 ? 'Partially Verified' : 'Unverified, possibly fake'),
         sources_checked: ai.news_sources_checked || [],
       } : null,
+      manipulation_tactic: ai.manipulation_tactic || null,
       figure: figure ? {
         name:                     figure.name,
         role:                     figure.role,

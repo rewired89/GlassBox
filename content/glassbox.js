@@ -179,7 +179,7 @@
     Hostile:    'Aggressive or dehumanizing. Designed to provoke fear or anger.',
   };
 
-  function renderResonanceIndicator(resonance, newsVerification) {
+  function renderResonanceIndicator(resonance, newsVerification, manipulationTactic) {
     const label = resonance.label || 'Neutral';
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
     const icon  = resonance.score < 35 ? '💢' : (resonance.score < 50 ? '⚠️' : '💬');
@@ -211,20 +211,71 @@
       btn.appendChild(fakeSpan);
     }
 
+    // Manipulation tactic badge — compact amber pill, inline with the score
+    if (manipulationTactic) {
+      const sep2 = document.createElement('span');
+      sep2.textContent = ' ';
+      btn.appendChild(sep2);
+      const tacticBadge = document.createElement('span');
+      tacticBadge.style.cssText = [
+        'color:#f59e0b', 'font-size:10px', 'font-weight:600',
+        'border:1px solid #f59e0b55', 'border-radius:3px',
+        'padding:1px 4px', 'background:#f59e0b0d',
+      ].join(';');
+      tacticBadge.textContent = `⚠️ ${manipulationTactic.name}`;
+      btn.appendChild(tacticBadge);
+    }
+
+    // ── Expandable detail panel ───────────────────────────────────────────────
     const detail = document.createElement('div');
     detail.className = 'gb-resonance-detail';
-    detail.style.cssText = `display:none;font-size:11px;color:${resonance.color};padding:3px 6px;border-radius:4px;background:${resonance.color}11;max-width:240px;line-height:1.4`;
+    detail.style.cssText = [
+      'display:none', 'font-size:11px', `color:${resonance.color}`,
+      'padding:5px 8px', 'border-radius:4px', `background:${resonance.color}11`,
+      'max-width:270px', 'line-height:1.5',
+    ].join(';');
 
-    let detailText = desc;
+    // Tone line
+    const toneDiv = document.createElement('div');
+    toneDiv.textContent = desc;
+    detail.appendChild(toneDiv);
+
+    // News verification line
     if (newsVerification && newsVerification.label) {
       const nvScore = newsVerification.score;
-      const nvLabel = newsVerification.label;
-      detailText += ` | News: ${nvLabel}`;
-      if (nvScore >= 70) detailText += ' — No credible sources found to verify this story.';
-      else if (nvScore >= 30) detailText += ' — Story partially verifiable; some details unconfirmed.';
-      else detailText += ' — Confirmed by credible sources.';
+      const nvColor = nvScore < 30 ? '#22c55e' : (nvScore < 70 ? '#f59e0b' : '#ef4444');
+      const nvDiv = document.createElement('div');
+      nvDiv.style.cssText = `margin-top:3px;color:${nvColor}`;
+      let nvText = `News: ${newsVerification.label}`;
+      if (nvScore >= 70) nvText += ' — No credible sources found.';
+      else if (nvScore >= 30) nvText += ' — Partially verifiable; some details unconfirmed.';
+      else nvText += ' — Confirmed by credible sources.';
+      nvDiv.textContent = nvText;
+      detail.appendChild(nvDiv);
     }
-    detail.textContent = detailText;
+
+    // Manipulation tactic detail + book recommendation
+    if (manipulationTactic) {
+      const tacticDiv = document.createElement('div');
+      tacticDiv.style.cssText = 'margin-top:5px;padding-top:5px;border-top:1px solid #f59e0b44;';
+
+      const nameEl = document.createElement('div');
+      nameEl.style.cssText = 'color:#f59e0b;font-weight:600;font-size:11px;';
+      nameEl.textContent = `⚠️ ${manipulationTactic.name}`;
+      tacticDiv.appendChild(nameEl);
+
+      const descEl = document.createElement('div');
+      descEl.style.cssText = 'color:#d1d5db;font-size:10px;margin-top:2px;';
+      descEl.textContent = manipulationTactic.description;
+      tacticDiv.appendChild(descEl);
+
+      const bookEl = document.createElement('div');
+      bookEl.style.cssText = 'color:#9ca3af;font-size:10px;margin-top:3px;font-style:italic;';
+      bookEl.textContent = `📚 "${manipulationTactic.book_title}" — ${manipulationTactic.book_author}`;
+      tacticDiv.appendChild(bookEl);
+
+      detail.appendChild(tacticDiv);
+    }
 
     btn.addEventListener('click', e => {
       e.stopPropagation(); e.preventDefault();
@@ -571,8 +622,8 @@
         const row = document.createElement('div');
         row.setAttribute('data-glassbox', 'annotation-row');
         row.className = 'gb-post-annotation';
-        // Pass news_verification so Twitter score shows "25% Dismissive / 99% fake"
-        row.appendChild(renderResonanceIndicator(result.resonance, result.news_verification));
+        // Pass news_verification + manipulation_tactic so score shows "25% Dismissive / 99% fake ⚠️ Semantic Deflection"
+        row.appendChild(renderResonanceIndicator(result.resonance, result.news_verification, result.manipulation_tactic));
         // On TikTok also show the standalone Verified / Unverified tag
         if (platformName === 'tiktok' && result.news_verification?.label) {
           row.appendChild(renderNewsVerificationTag(result.news_verification));
@@ -623,7 +674,11 @@
     if (btn.dataset.gbHooked) return;
     btn.dataset.gbHooked = '1';
     btn.addEventListener('pointerdown', e => {
-      if (btn.dataset.gbProceed) return;
+      // If the user already acknowledged the warning, let the next natural press through.
+      // This fixes the bug where btn.click() (isTrusted:false) was ignored by Twitter,
+      // requiring the user to press Post 5+ times. Now: 1st press = modal, 2nd = posts.
+      if (btn.dataset.gbWarned) return;
+
       const area = document.querySelector(platform.composeSel);
       if (!area) return;
       const text = getTextContent(area);
@@ -636,9 +691,10 @@
       showReflectionModal({
         postText: text,
         onProceed: () => {
-          btn.dataset.gbProceed = '1';
-          btn.click();
-          setTimeout(() => delete btn.dataset.gbProceed, 500);
+          // Mark button approved — the user's very next press goes straight through.
+          // Expires after 60 s so re-edits can still be caught.
+          btn.dataset.gbWarned = '1';
+          setTimeout(() => delete btn.dataset.gbWarned, 60_000);
         },
         onCancel: () => {},
       });
@@ -665,7 +721,7 @@
         </div>
         <div class="gb-modal__actions">
           <button class="gb-modal__btn gb-modal__btn--cancel" data-action="cancel">Edit my post</button>
-          <button class="gb-modal__btn gb-modal__btn--proceed" data-action="proceed">Post anyway</button>
+          <button class="gb-modal__btn gb-modal__btn--proceed" data-action="proceed">Post anyway → press Post once more</button>
         </div>
       </div>`;
 
