@@ -184,124 +184,103 @@
     Hostile:    'Aggressive or dehumanizing. Designed to provoke fear or anger.',
   };
 
-  function renderResonanceIndicator(resonance, newsVerification, manipulationTactic) {
+  /**
+   * Standalone resonance banner — injected directly below the tweet text,
+   * always fully visible (no click needed). Shows:
+   *   • Score + label + description (tone)
+   *   • News verification status (if present)
+   *   • Manipulation tactic name, description, and book recommendation (if present)
+   *
+   * Score display is INVERTED for negative labels so that bad content shows
+   * a high percentage:  resonance 18 (Hostile) → displayed as "82% Hostile"
+   *                     resonance 82 (Empathetic) → displayed as "82% Empathetic"
+   */
+  function renderResonanceBanner(resonance, newsVerification, manipulationTactic) {
     const label = resonance.label || 'Neutral';
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
-    const icon  = resonance.score < 35 ? '💢' : (resonance.score < 50 ? '⚠️' : '💬');
 
-    const wrap = document.createElement('div');
-    wrap.setAttribute('data-glassbox', 'resonance-indicator');
-    wrap.style.cssText = 'display:inline-flex;flex-direction:column;gap:2px;';
+    // Invert score for hostile/dismissive so that high % = extreme bad behaviour
+    const isNegative  = label === 'Hostile' || label === 'Dismissive';
+    const displayPct  = isNegative ? (100 - resonance.score) : resonance.score;
+    const scoreIcon   = label === 'Hostile' ? '💢' : label === 'Dismissive' ? '⚠️' : label === 'Neutral' ? '💬' : '✅';
 
-    const btn = document.createElement('button');
-    btn.className = 'gb-resonance';
-    btn.style.cssText = `color:${resonance.color};border-color:${resonance.color}33;background:${resonance.color}11`;
-
-    // Tone portion — always present
-    const toneSpan = document.createElement('span');
-    toneSpan.textContent = `${icon} ${resonance.score}% ${label}`;
-    btn.appendChild(toneSpan);
-
-    // Fake-news portion — only when the API returned verification data
-    if (newsVerification && newsVerification.label) {
-      const fakeScore = newsVerification.score;
-      const fakeColor = fakeScore < 30 ? '#22c55e' : (fakeScore < 70 ? '#f59e0b' : '#ef4444');
-      const sep = document.createElement('span');
-      sep.textContent = ' / ';
-      sep.style.color = '#9ca3af';
-      btn.appendChild(sep);
-      const fakeSpan = document.createElement('span');
-      fakeSpan.textContent = `${fakeScore}% fake`;
-      fakeSpan.style.color = fakeColor;
-      btn.appendChild(fakeSpan);
-    }
-
-    // Manipulation tactic badge — compact amber pill, inline with the score
-    if (manipulationTactic) {
-      const sep2 = document.createElement('span');
-      sep2.textContent = ' ';
-      btn.appendChild(sep2);
-      const tacticBadge = document.createElement('span');
-      tacticBadge.style.cssText = [
-        'color:#f59e0b', 'font-size:10px', 'font-weight:600',
-        'border:1px solid #f59e0b55', 'border-radius:3px',
-        'padding:1px 4px', 'background:#f59e0b0d',
-      ].join(';');
-      tacticBadge.textContent = `⚠️ ${manipulationTactic.name}`;
-      btn.appendChild(tacticBadge);
-    }
-
-    // ── Expandable detail panel ───────────────────────────────────────────────
-    const detail = document.createElement('div');
-    detail.className = 'gb-resonance-detail';
-    detail.style.cssText = [
-      'display:none', 'font-size:11px', `color:${resonance.color}`,
-      'padding:5px 8px', 'border-radius:4px', `background:${resonance.color}11`,
-      'max-width:270px', 'line-height:1.5',
+    const el = document.createElement('div');
+    el.setAttribute('data-glassbox', 'resonance-banner');
+    el.style.cssText = [
+      `border-left:3px solid ${resonance.color}`,
+      `background:${resonance.color}0d`,
+      'border-radius:0 8px 8px 0',
+      'padding:9px 13px',
+      'margin:6px 0',
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+      'line-height:1.5',
     ].join(';');
 
-    // Tone line
-    const toneDiv = document.createElement('div');
-    toneDiv.textContent = desc;
-    detail.appendChild(toneDiv);
+    // ── Score + description (always visible) ──────────────────────────────────
+    const scoreRow = document.createElement('div');
+    scoreRow.style.cssText = 'display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;';
 
-    // News verification line
-    if (newsVerification && newsVerification.label) {
+    const scoreEl = document.createElement('span');
+    scoreEl.style.cssText = `color:${resonance.color};font-weight:700;font-size:13px;white-space:nowrap;`;
+    scoreEl.textContent = `${scoreIcon} ${displayPct}% ${label}`;
+    scoreRow.appendChild(scoreEl);
+
+    const descEl = document.createElement('span');
+    descEl.style.cssText = 'color:#9ca3af;font-size:11px;';
+    descEl.textContent = desc;
+    scoreRow.appendChild(descEl);
+    el.appendChild(scoreRow);
+
+    // ── News verification (if present) ────────────────────────────────────────
+    if (newsVerification?.label) {
       const nvScore = newsVerification.score;
-      const nvColor = nvScore < 30 ? '#22c55e' : (nvScore < 70 ? '#f59e0b' : '#ef4444');
-      const nvDiv = document.createElement('div');
-      nvDiv.style.cssText = `margin-top:3px;color:${nvColor}`;
-      let nvText = `News: ${newsVerification.label}`;
-      if (nvScore >= 70) nvText += ' — No credible sources found.';
-      else if (nvScore >= 30) nvText += ' — Partially verifiable; some details unconfirmed.';
-      else nvText += ' — Confirmed by credible sources.';
-      nvDiv.textContent = nvText;
-      detail.appendChild(nvDiv);
+      const nvColor = nvScore < 30 ? '#22c55e' : nvScore < 70 ? '#f59e0b' : '#ef4444';
+      const nvIcon  = nvScore < 30 ? '✅' : nvScore < 70 ? '⚠️' : '🚩';
+      const nvNote  = nvScore >= 70 ? 'No credible sources found.'
+                    : nvScore >= 30 ? 'Partially verifiable; some details unconfirmed.'
+                    : 'Confirmed by credible sources.';
+      const nvEl = document.createElement('div');
+      nvEl.style.cssText = `color:${nvColor};font-size:11px;margin-top:4px;`;
+      nvEl.textContent = `${nvIcon} ${newsVerification.label} (${nvScore}%) — ${nvNote}`;
+      el.appendChild(nvEl);
     }
 
-    // Manipulation tactic detail + book recommendation
+    // ── Manipulation tactic + book recommendation (if present) ─────────────────
     if (manipulationTactic) {
-      const tacticDiv = document.createElement('div');
-      tacticDiv.style.cssText = 'margin-top:5px;padding-top:5px;border-top:1px solid #f59e0b44;';
+      const sep = document.createElement('div');
+      sep.style.cssText = 'border-top:1px solid #2f3241;margin-top:7px;padding-top:7px;';
 
-      const nameEl = document.createElement('div');
-      nameEl.style.cssText = 'color:#f59e0b;font-weight:600;font-size:11px;';
-      nameEl.textContent = `⚠️ ${manipulationTactic.name}`;
-      tacticDiv.appendChild(nameEl);
+      const tacticLine = document.createElement('div');
+      tacticLine.style.cssText = 'font-size:11px;';
+      const nameSpan = document.createElement('span');
+      nameSpan.style.cssText = 'color:#f59e0b;font-weight:600;';
+      nameSpan.textContent = `⚠️ ${manipulationTactic.name}`;
+      const dashSpan = document.createElement('span');
+      dashSpan.style.cssText = 'color:#9ca3af;margin-left:5px;';
+      dashSpan.textContent = `— ${manipulationTactic.description}`;
+      tacticLine.appendChild(nameSpan);
+      tacticLine.appendChild(dashSpan);
+      sep.appendChild(tacticLine);
 
-      const descEl = document.createElement('div');
-      descEl.style.cssText = 'color:#d1d5db;font-size:10px;margin-top:2px;';
-      descEl.textContent = manipulationTactic.description;
-      tacticDiv.appendChild(descEl);
-
-      const bookEl = document.createElement('div');
-      bookEl.style.cssText = 'color:#9ca3af;font-size:10px;margin-top:3px;';
-      const bookIcon = document.createElement('span');
-      bookIcon.textContent = '📚 ';
-      const bookLabel = document.createElement('strong');
-      bookLabel.style.cssText = 'color:#d1d5db;font-style:normal;';
-      bookLabel.textContent = 'Read: ';
+      const bookLine = document.createElement('div');
+      bookLine.style.cssText = 'font-size:10px;color:#6b7280;margin-top:3px;';
+      const bookIcon  = document.createTextNode('📚 ');
+      const bookBold  = document.createElement('strong');
+      bookBold.style.color = '#9ca3af';
+      bookBold.textContent = 'Read: ';
       const bookTitle = document.createElement('em');
       bookTitle.textContent = `"${manipulationTactic.book_title}"`;
-      const bookAuthor = document.createElement('span');
-      bookAuthor.textContent = ` — ${manipulationTactic.book_author}`;
-      bookEl.appendChild(bookIcon);
-      bookEl.appendChild(bookLabel);
-      bookEl.appendChild(bookTitle);
-      bookEl.appendChild(bookAuthor);
-      tacticDiv.appendChild(bookEl);
+      const bookAuth  = document.createTextNode(` — ${manipulationTactic.book_author}`);
+      bookLine.appendChild(bookIcon);
+      bookLine.appendChild(bookBold);
+      bookLine.appendChild(bookTitle);
+      bookLine.appendChild(bookAuth);
+      sep.appendChild(bookLine);
 
-      detail.appendChild(tacticDiv);
+      el.appendChild(sep);
     }
 
-    btn.addEventListener('click', e => {
-      e.stopPropagation(); e.preventDefault();
-      detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
-    });
-
-    wrap.appendChild(btn);
-    wrap.appendChild(detail);
-    return wrap;
+    return el;
   }
 
   /**
@@ -544,7 +523,6 @@
       <button class="gb-acct-card__trigger" aria-expanded="false">
         <span>🏛️</span>
         <span class="gb-acct-card__trigger-label">Public Record — ${escHTML(figure.name)}</span>
-        ${_resonanceBadgeHTML(resonance)}
         <span class="gb-acct-card__trigger-role">${escHTML(figure.role || '')}</span>
         <span class="gb-acct-card__trigger-arrow">▼</span>
       </button>
@@ -571,7 +549,6 @@
       <button class="gb-acct-card__trigger" aria-expanded="false">
         <span>🪞</span>
         <span class="gb-acct-card__trigger-label">Biographical Context — ${escHTML(figure.name)}</span>
-        ${_resonanceBadgeHTML(resonance)}
         <span class="gb-acct-card__trigger-role">${escHTML(figure.role || '')}</span>
         <span class="gb-acct-card__trigger-arrow">▼</span>
       </button>
@@ -679,24 +656,18 @@
     const insertPoint = textEl?.parentElement ?? postEl.querySelector('[data-testid="tweetText"]')?.closest('div') ?? postEl;
     if (!insertPoint) return;
 
-    // ── Annotation row (resonance indicator — always shown when score available) ──
-    if (settings.showManipulationIndicators && result.resonance) {
-      const actionBar = postEl.querySelector(platform.actionSel);
-      if (actionBar && !actionBar.querySelector('[data-glassbox="annotation-row"]')) {
-        const row = document.createElement('div');
-        row.setAttribute('data-glassbox', 'annotation-row');
-        row.className = 'gb-post-annotation';
-        // Pass news_verification + manipulation_tactic so score shows "25% Dismissive / 99% fake ⚠️ Semantic Deflection"
-        row.appendChild(renderResonanceIndicator(result.resonance, result.news_verification, result.manipulation_tactic));
-        // On TikTok also show the standalone Verified / Unverified tag
-        if (platformName === 'tiktok' && result.news_verification?.label) {
-          row.appendChild(renderNewsVerificationTag(result.news_verification));
-        }
-        actionBar.appendChild(row);
-      }
+    // ── Resonance banner — standalone, below tweet text, always visible ──────────
+    // No longer placed inside the action bar or the card header.
+    // The score is shown as the first thing below the post so readers
+    // see it immediately without having to expand any card.
+    if (result.resonance && !insertPoint.querySelector('[data-glassbox="resonance-banner"]')) {
+      insertPoint.insertBefore(
+        renderResonanceBanner(result.resonance, result.news_verification, result.manipulation_tactic),
+        afterText
+      );
     }
 
-    // ── Standalone news-verification tag (TikTok: inject near caption) ──────────
+    // ── Standalone news-verification tag (TikTok only) ────────────────────────
     if (platformName === 'tiktok' && result.news_verification?.label) {
       if (!insertPoint.querySelector('[data-glassbox="news-verification-tag"]')) {
         insertPoint.insertBefore(renderNewsVerificationTag(result.news_verification), afterText);

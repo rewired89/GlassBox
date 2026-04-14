@@ -257,8 +257,21 @@ Return ONLY valid JSON — no markdown, no explanation:
   "ai_generated": { "detected": false, "confidence": "none", "signals": [] }
 }
 
-Resonance guide: 70-100=empathetic/constructive, 50-69=neutral/factual, 30-49=dismissive/sarcastic, 0-29=hostile/dehumanizing.
-Only flag: specific false factual claims contradicted by overwhelming documented evidence, or explicit dehumanization of groups. Do NOT flag opinions, policy disagreements, or criticism.
+Resonance scoring — use the FULL 0–100 range. Do NOT cluster scores. Be precise:
+• 0–10:  Explicit dehumanization ("immigrants are vermin/disease/subhuman"), direct incitement, coordinated hate. This is the worst possible content.
+• 11–29: Hostile — deliberate fear-mongering with false or misleading claims, content engineered to provoke tribal rage, personal attacks as the primary message.
+• 30–49: Dismissive — condescending framing, intellectually dishonest rhetoric, manipulative dog-whistles, strong us-vs-them language without direct violence.
+• 50–69: Neutral — factual or opinionated but not manipulative. Blunt disagreement or criticism is fine here.
+• 70–100: Empathetic/constructive — respectful, good-faith, solution-oriented, fact-based even when critical or passionate.
+
+Calibration anchors — use these to calibrate, not cluster:
+"immigrants are an invasion of vermin" → 5
+"[politician] is trying to make investigating fraud illegal" (false fearful claim) → 20
+"This policy will destroy the country" (vague hyperbole, no evidence) → 27
+"That idea is ridiculous" (dismissive, no facts) → 38
+"I disagree strongly with this approach because..." → 57
+"Here's the evidence for why this policy is harmful" → 76
+"Thank you for sharing this — this is what matters" → 88
 
 News verification guide (for news_verification_score / news_verification_label / news_sources_checked):
 - ONLY populate these fields if the post tells a specific news story, references a real-world event or incident, or makes verifiable factual claims about something that happened.
