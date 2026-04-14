@@ -270,8 +270,20 @@
       tacticDiv.appendChild(descEl);
 
       const bookEl = document.createElement('div');
-      bookEl.style.cssText = 'color:#9ca3af;font-size:10px;margin-top:3px;font-style:italic;';
-      bookEl.textContent = `📚 "${manipulationTactic.book_title}" — ${manipulationTactic.book_author}`;
+      bookEl.style.cssText = 'color:#9ca3af;font-size:10px;margin-top:3px;';
+      const bookIcon = document.createElement('span');
+      bookIcon.textContent = '📚 ';
+      const bookLabel = document.createElement('strong');
+      bookLabel.style.cssText = 'color:#d1d5db;font-style:normal;';
+      bookLabel.textContent = 'Read: ';
+      const bookTitle = document.createElement('em');
+      bookTitle.textContent = `"${manipulationTactic.book_title}"`;
+      const bookAuthor = document.createElement('span');
+      bookAuthor.textContent = ` — ${manipulationTactic.book_author}`;
+      bookEl.appendChild(bookIcon);
+      bookEl.appendChild(bookLabel);
+      bookEl.appendChild(bookTitle);
+      bookEl.appendChild(bookAuthor);
       tacticDiv.appendChild(bookEl);
 
       detail.appendChild(tacticDiv);
