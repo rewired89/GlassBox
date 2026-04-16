@@ -656,6 +656,7 @@
 
   // ── Post annotation ───────────────────────────────────────────────────────────
   const processedPosts = new WeakSet();
+  const _retryCount    = new WeakMap();
 
   async function annotatePost(postEl) {
     if (processedPosts.has(postEl)) return;
@@ -689,9 +690,23 @@
       result = await callAPI(text, imageUrls, handle);
     } catch (e) {
       console.warn('[GlassBox] API error:', e.message);
+      processedPosts.delete(postEl);
       return;
     }
-    if (!result) { console.log('[GlassBox] API returned null — check API URL and server logs'); return; }
+    if (!result) {
+      // API timed out or returned nothing — likely a Railway cold start.
+      // Remove from processedPosts so we can retry, up to 2 times.
+      const retries = _retryCount.get(postEl) || 0;
+      if (retries < 2) {
+        _retryCount.set(postEl, retries + 1);
+        processedPosts.delete(postEl);
+        console.log(`[GlassBox] API returned null — retry ${retries + 1}/2 in 8s`);
+        setTimeout(() => queuePost(postEl), 8_000);
+      } else {
+        console.log('[GlassBox] API returned null after 2 retries — giving up on this post');
+      }
+      return;
+    }
 
     console.log('[GlassBox] result:', { flagged: result.flagged, figure: result.figure?.name, resonance: result.resonance?.score });
 
