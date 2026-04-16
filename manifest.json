@@ -51,7 +51,7 @@
     "https://youtube.com/*",
     "https://www.tiktok.com/*",
     "https://tiktok.com/*",
-    "https://*/*"
+    "https://glassbox-production-3db2.up.railway.app/*"
   ],
   "browser_specific_settings": {
     "gecko": {
