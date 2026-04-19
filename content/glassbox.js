@@ -262,11 +262,12 @@
     descEl.textContent = desc;
     body.appendChild(descEl);
 
-    // Manipulation tactic + book recommendation
+    // Manipulation tactic + evidence integrity + mirror test + book recommendation
     if (manipulationTactic) {
       const tacticWrap = document.createElement('div');
       tacticWrap.style.cssText = `border-top:1px solid ${resonance.color}44;padding-top:6px;margin-top:6px;`;
 
+      // Tactic name + description
       const tacticLine = document.createElement('div');
       tacticLine.style.cssText = 'font-size:11px;';
       const nameSpan = document.createElement('span');
@@ -279,6 +280,27 @@
       tacticLine.appendChild(dashSpan);
       tacticWrap.appendChild(tacticLine);
 
+      // Evidence integrity check
+      if (manipulationTactic.evidence_integrity) {
+        const evidenceEl = document.createElement('div');
+        evidenceEl.style.cssText = `font-size:10px;color:#b45309;font-weight:600;margin-top:4px;`;
+        evidenceEl.textContent = `🔍 ${manipulationTactic.evidence_integrity}`;
+        tacticWrap.appendChild(evidenceEl);
+      }
+
+      // Mirror test
+      if (manipulationTactic.mirror_test) {
+        const mirrorEl = document.createElement('div');
+        mirrorEl.style.cssText = `font-size:10px;color:${SUBTEXT};margin-top:5px;padding:5px 8px;background:${resonance.color}10;border-radius:4px;font-style:italic;`;
+        const mirrorLabel = document.createElement('strong');
+        mirrorLabel.style.cssText = `color:${TEXT};font-style:normal;`;
+        mirrorLabel.textContent = '🪞 Mirror Test: ';
+        mirrorEl.appendChild(mirrorLabel);
+        mirrorEl.appendChild(document.createTextNode(manipulationTactic.mirror_test));
+        tacticWrap.appendChild(mirrorEl);
+      }
+
+      // Book recommendation
       const bookLine = document.createElement('div');
       bookLine.style.cssText = `font-size:10px;color:${SUBTEXT};margin-top:4px;`;
       const bookBold = document.createElement('strong');

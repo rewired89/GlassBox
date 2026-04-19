@@ -272,6 +272,202 @@
       ],
       "regex_patterns": [],
       "weight": 1.8
+    },
+    "false_moral_authority": {
+      "label": "False Moral Authority",
+      "icon": "⛪",
+      "description": "Invokes divine command, tradition, or heritage to justify discrimination or exclusion",
+      "patterns": [
+        "God intended",
+        "God designed",
+        "God made men and women",
+        "divine order",
+        "natural order",
+        "God's plan",
+        "biblical truth",
+        "scripture says",
+        "our forefathers intended",
+        "tradition demands",
+        "as God intended",
+        "against God's law",
+        "our Christian heritage",
+        "this is God's country",
+        "founded on Christian values",
+        "morally wrong because God",
+        "sinful by nature"
+      ],
+      "regex_patterns": [
+        "\\b(God|scripture|Bible|divine|tradition|forefathers).{0,30}(demand|require|intend|decree|command|forbid)\\b"
+      ],
+      "weight": 1.3
+    },
+    "ingroup_outgroup_bias": {
+      "label": "In-Group/Out-Group Bias",
+      "icon": "🚧",
+      "description": "Frames a country or community as belonging exclusively to one demographic while casting others as threats or invaders",
+      "patterns": [
+        "real Americans are",
+        "true Americans",
+        "this is a white country",
+        "this is a Christian nation",
+        "our people",
+        "the founding stock",
+        "demographic replacement",
+        "becoming a minority in our own country",
+        "being replaced",
+        "heritage Americans",
+        "we will not be replaced",
+        "our way of life is being erased",
+        "foreign invaders",
+        "they don't share our values",
+        "they will never be one of us"
+      ],
+      "regex_patterns": [
+        "\\b(our|this|America).{0,20}(country|nation|land|culture).{0,30}(belong|built|founded|meant).{0,20}(us|whites|Christians|real Americans)\\b"
+      ],
+      "weight": 1.6
+    },
+    "statistical_distortion": {
+      "label": "Statistical Distortion",
+      "icon": "📊",
+      "description": "Misrepresents numbers, rates, or demographic data in ways that contradict verified sources",
+      "patterns": [
+        "the real crime rate",
+        "look at the statistics",
+        "the numbers don't lie",
+        "statistics prove",
+        "immigrants commit more crime",
+        "crime is higher because of",
+        "they take more than they give",
+        "costs us billions",
+        "draining the system",
+        "disproportionately commit",
+        "they account for most crime",
+        "the real unemployment numbers"
+      ],
+      "regex_patterns": [
+        "\\b\\d+%.{0,30}(crime|violence|welfare|cost|burden|unemployment)\\b",
+        "\\b(immigrants?|minorities|they).{0,30}(commit|responsible for|cause).{0,30}(crime|violence|fraud)\\b"
+      ],
+      "weight": 1.4
+    },
+    "appeal_to_ignorance": {
+      "label": "Appeal to Ignorance",
+      "icon": "🕳️",
+      "description": "Uses the absence of disproof as proof of truth — 'you can't prove it's wrong so it must be right'",
+      "patterns": [
+        "prove me wrong",
+        "nobody can disprove",
+        "can you prove it didn't",
+        "there's no evidence against",
+        "no one has shown it's false",
+        "you can't say for certain",
+        "it hasn't been ruled out",
+        "until proven otherwise",
+        "if you can't disprove it",
+        "where's the proof it's fake"
+      ],
+      "regex_patterns": [
+        "\\b(prove|disprove).{0,20}(wrong|false|untrue|doesn't exist)\\b"
+      ],
+      "weight": 0.9
+    },
+    "gender_supremacy": {
+      "label": "Gender Supremacy Rhetoric",
+      "icon": "⛔",
+      "description": "Frames one gender as inherently superior or entitled to the submission, service, or silence of another",
+      "patterns": [
+        "women belong in the kitchen",
+        "women should be submissive",
+        "a woman's place is",
+        "women aren't meant to lead",
+        "men are naturally dominant",
+        "alpha male",
+        "women need to be led",
+        "hypergamy",
+        "female nature is",
+        "women can't handle",
+        "men are just better at",
+        "traditional roles are natural",
+        "feminism ruined women",
+        "submissive wife",
+        "trad wife is natural",
+        "women were happier when they stayed home"
+      ],
+      "regex_patterns": [
+        "\\b(women|females?).{0,30}(belong|should|designed|meant|built|made).{0,20}(to|for).{0,20}(serve|submit|obey|stay home|be silent)\\b",
+        "\\b(men|males?).{0,20}(are|were).{0,20}(naturally|biologically|evolutionarily).{0,20}(superior|dominant|built to lead|better)\\b"
+      ],
+      "weight": 1.7
+    },
+    "pseudo_science_nature": {
+      "label": "Pseudo-Science / False Appeal to Nature",
+      "icon": "🔬",
+      "description": "Misuses evolutionary or biological framing to justify removing autonomy or rights from a group",
+      "patterns": [
+        "science proves women are",
+        "biology determines",
+        "evolution designed women to",
+        "biologically wired to",
+        "it's just biology",
+        "evolutionary psychology says",
+        "nature intended women",
+        "hardwired to submit",
+        "it's in their DNA",
+        "natural hierarchy",
+        "alpha/beta dynamics",
+        "red pill science",
+        "biological imperative"
+      ],
+      "regex_patterns": [
+        "\\b(biology|evolution|nature|science|DNA|genetics).{0,30}(proves?|shows?|determines?|designed?).{0,30}(women|females?)\\b"
+      ],
+      "weight": 1.5
+    },
+    "anecdotal_generalization": {
+      "label": "Anecdotal Generalization",
+      "icon": "🎭",
+      "description": "Uses a single personal experience or opinion to make sweeping factual claims about an entire group's rights, roles, or character",
+      "patterns": [
+        "all women I know",
+        "every woman I've met",
+        "women always do this",
+        "women never",
+        "that's just how women are",
+        "women are all the same",
+        "this is what all women do",
+        "men are all the same",
+        "all men think",
+        "that's just how men are",
+        "I know a woman who proves"
+      ],
+      "regex_patterns": [
+        "\\b(all|every|most|typical).{0,10}(women|men|females?|males?).{0,50}(always|never|are all|do this|think this)\\b"
+      ],
+      "weight": 1.0
+    },
+    "subordination_rhetoric": {
+      "label": "Subordination Rhetoric",
+      "icon": "🔒",
+      "description": "Argues for the removal of women's rights, autonomy, or equality as natural, divine, or beneficial to society",
+      "patterns": [
+        "women don't need rights",
+        "feminism is destroying society",
+        "women's lib ruined everything",
+        "women should not vote",
+        "gender equality is a myth",
+        "equal rights went too far",
+        "women's independence caused",
+        "working women ruined",
+        "careers over family ruined society",
+        "women weren't meant to vote",
+        "the problem is women working",
+        "women choosing work over children is wrong"
+      ],
+      "regex_patterns": [
+        "\\b(women|females?).{0,30}(shouldn't|don't need|were never meant to|should not).{0,20}(have rights|vote|work|lead|decide|choose)\\b"
+      ],
+      "weight": 1.8
     }
   },
   "thresholds": {

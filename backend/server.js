@@ -243,7 +243,7 @@ Return ONLY valid JSON — no markdown, no explanation:
 {
   "flagged": boolean,
   "flag_reason": "specific factual reason, or null",
-  "flag_categories": ["array from: misinformation|hate_speech|dehumanization|election_integrity|climate_denial|vaccine_misinformation|historical_denial|immigration_fearmongering|indigenous_rights_denial"],
+  "flag_categories": ["array from: misinformation|hate_speech|dehumanization|election_integrity|climate_denial|vaccine_misinformation|historical_denial|immigration_fearmongering|indigenous_rights_denial|false_moral_authority|ingroup_outgroup_bias|statistical_distortion|appeal_to_ignorance|gender_supremacy|subordination_rhetoric|pseudo_science|anecdotal_generalization"],
   "resonance_score": 0-100,
   "resonance_label": "Empathetic|Neutral|Dismissive|Hostile",
   "resonance_affect": 0-100,
@@ -253,7 +253,7 @@ Return ONLY valid JSON — no markdown, no explanation:
   "news_verification_score": null,
   "news_verification_label": null,
   "news_sources_checked": [],
-  "manipulation_tactic": null,
+  "manipulation_tactic": { "name": "string", "description": "string", "book_title": "string", "book_author": "string", "mirror_test": "string — one question asking how the argument changes if roles were reversed", "evidence_integrity": "string or null — null if the claim has supporting evidence, otherwise: 'No peer-reviewed data or verified public record supports this claim.'" },
   "ai_generated": { "detected": false, "confidence": "none", "signals": [] }
 }
 
@@ -283,19 +283,27 @@ News verification guide (for news_verification_score / news_verification_label /
 Manipulation tactic guide (for manipulation_tactic):
 - ONLY populate if one dominant rhetorical manipulation tactic is clearly central to the post — not incidental.
 - Return null for constructive criticism, blunt-but-honest posts, or posts defending documented victims of harm.
-- When detected, return: {"name":"<tactic>","description":"<1 sentence plain-English explanation of how it is used here>","book_title":"<book>","book_author":"<author>"}
+- When detected, return: {"name":"<tactic>","description":"<1 sentence plain-English explanation of how it is used in THIS specific post>","book_title":"<book>","book_author":"<author>","mirror_test":"<one question: how would this argument change if the subject and target groups were reversed?>","evidence_integrity":"<null if evidence exists, otherwise: 'No peer-reviewed data or verified public record supports this claim.'>"}
 - Use EXACTLY these tactic names and paired book recommendations:
   "Semantic Deflection" (argues about word choice or framing to avoid addressing the real issue) → "Thank You for Arguing" by Jay Heinrichs
   "Fear-Mongering" (exaggerates threats to provoke panic rather than inform) → "The True Believer" by Eric Hoffer
   "Emotional Manipulation" (exploits feelings as a substitute for evidence) → "Influence" by Robert Cialdini
   "Conspiracy Framing" (presents unverified speculation as hidden truth) → "Calling Bullshit" by Carl T. Bergstrom & Jevin D. West
-  "Dehumanizing Language" (reduces people to sub-human categories) → "Less Than Human" by David Livingstone Smith
+  "Dehumanizing Language" (reduces people to sub-human categories to strip them of moral consideration) → "Less Than Human" by David Livingstone Smith
   "Ad Hominem" (attacks the person to avoid engaging with their argument) → "How to Win Every Argument" by Madsen Pirie
   "Missing Context" (omits facts that would change the audience's conclusion) → "Manufacturing Consent" by Noam Chomsky & Edward S. Herman
   "Bandwagon" (claims popularity as proof of truth) → "Extraordinary Popular Delusions" by Charles Mackay
   "False Dichotomy" (presents only two options when more exist) → "The Art of Thinking Clearly" by Rolf Dobelli
   "Cherry-Picked Data" (selects only evidence that supports the conclusion) → "Bad Science" by Ben Goldacre
   "Slippery Slope" (claims one step inevitably leads to extreme outcomes without evidence) → "How Minds Change" by David McRaney
+  "False Moral Authority" (invokes divine command, sacred tradition, or ancestry to justify discrimination or exclusion) → "The Rape of the Mind" by Joost Meerloo
+  "In-Group/Out-Group Bias" (frames a nation or community as belonging exclusively to one demographic while casting others as invaders or enemies) → "Thinking, Fast and Slow" by Daniel Kahneman
+  "Statistical Distortion" (misrepresents numbers, crime rates, or demographic data in ways that contradict verified sources) → "How to Lie with Statistics" by Darrell Huff
+  "Appeal to Ignorance" (uses the absence of disproof as evidence of truth — 'you can't prove it's wrong') → "Calling Bullshit" by Carl T. Bergstrom & Jevin D. West
+  "Gender Supremacy Rhetoric" (frames one gender as inherently superior or entitled to the submission or service of another) → "Invisible Women" by Caroline Criado Perez
+  "Pseudo-Science / False Appeal to Nature" (misuses evolutionary or biological framing to justify removing autonomy or rights from a group) → "Inferior" by Angela Saini
+  "Anecdotal Generalization" (uses a single personal experience or opinion to make sweeping factual claims about an entire group's rights or character) → "Thinking, Fast and Slow" by Daniel Kahneman
+  "Subordination Rhetoric" (argues for the removal of women's rights or autonomy as natural, divine, or socially beneficial) → "The Second Sex" by Simone de Beauvoir
 
 AI-generated content detection (ai_generated field):
 - Examine every image attached to this request for signs of AI generation.
