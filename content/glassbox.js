@@ -205,7 +205,7 @@
    *             📚 Read: "Manufacturing Consent" — Noam Chomsky
    *             🚩 Unverified, possibly fake (70%) — No credible sources found.
    */
-  function renderResonanceBanner(resonance, newsVerification, manipulationTactic) {
+  function renderResonanceBanner(resonance, newsVerification, manipulationTactic, flagCategories = []) {
     const label = resonance.label || 'Neutral';
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
 
@@ -262,21 +262,44 @@
     descEl.textContent = desc;
     body.appendChild(descEl);
 
+    // Government religious nationalism callout
+    if (flagCategories.includes('government_religious_nationalism')) {
+      const govEl = document.createElement('div');
+      govEl.style.cssText = `margin-bottom:6px;padding:7px 10px;background:#fef2f2;border:1px solid #fca5a5;border-radius:5px;font-size:11px;`;
+      const govTitle = document.createElement('div');
+      govTitle.style.cssText = `color:#b91c1c;font-weight:700;margin-bottom:3px;`;
+      govTitle.textContent = '🏛️ Institutional Religious Nationalism';
+      const govDesc = document.createElement('div');
+      govDesc.style.cssText = `color:#7f1d1d;line-height:1.5;`;
+      govDesc.textContent = 'A government or law enforcement account is using religious scripture or doctrine to frame national identity. This violates the First Amendment\'s Establishment Clause, which prohibits the government from endorsing or promoting any religion. The state does not speak for God — and God does not authorize the state.';
+      govEl.appendChild(govTitle);
+      govEl.appendChild(govDesc);
+      body.appendChild(govEl);
+    }
+
     // Manipulation tactic + evidence integrity + mirror test + book recommendation
     if (manipulationTactic) {
       const tacticWrap = document.createElement('div');
       tacticWrap.style.cssText = `border-top:1px solid ${resonance.color}44;padding-top:6px;margin-top:6px;`;
 
-      // Tactic name + description
+      // Tactic name + severity score + description
       const tacticLine = document.createElement('div');
-      tacticLine.style.cssText = 'font-size:11px;';
+      tacticLine.style.cssText = 'font-size:11px;display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;';
       const nameSpan = document.createElement('span');
       nameSpan.style.cssText = `color:${TEXT};font-weight:700;`;
+      const severity = manipulationTactic.tactic_severity;
+      const severityColor = severity >= 80 ? '#dc2626' : severity >= 60 ? '#d97706' : '#6b7280';
       nameSpan.textContent = `⚠️ ${manipulationTactic.name}`;
-      const dashSpan = document.createElement('span');
-      dashSpan.style.cssText = `color:${SUBTEXT};margin-left:5px;`;
-      dashSpan.textContent = `— ${manipulationTactic.description}`;
       tacticLine.appendChild(nameSpan);
+      if (severity != null) {
+        const severityBadge = document.createElement('span');
+        severityBadge.style.cssText = `color:${severityColor};font-weight:800;font-size:12px;`;
+        severityBadge.textContent = `${severity}%`;
+        tacticLine.appendChild(severityBadge);
+      }
+      const dashSpan = document.createElement('span');
+      dashSpan.style.cssText = `color:${SUBTEXT};`;
+      dashSpan.textContent = `— ${manipulationTactic.description}`;
       tacticLine.appendChild(dashSpan);
       tacticWrap.appendChild(tacticLine);
 
@@ -745,7 +768,7 @@
     // see it immediately without having to expand any card.
     if (result.resonance && !insertPoint.querySelector('[data-glassbox="resonance-banner"]')) {
       insertPoint.insertBefore(
-        renderResonanceBanner(result.resonance, result.news_verification, result.manipulation_tactic),
+        renderResonanceBanner(result.resonance, result.news_verification, result.manipulation_tactic, result.flag_categories || []),
         afterText
       );
     }

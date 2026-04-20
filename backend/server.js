@@ -253,7 +253,7 @@ Return ONLY valid JSON — no markdown, no explanation:
   "news_verification_score": null,
   "news_verification_label": null,
   "news_sources_checked": [],
-  "manipulation_tactic": { "name": "string", "description": "string", "book_title": "string", "book_author": "string", "mirror_test": "string — one question asking how the argument changes if roles were reversed", "evidence_integrity": "string or null — null if the claim has supporting evidence, otherwise: 'No peer-reviewed data or verified public record supports this claim.'" },
+  "manipulation_tactic": { "name": "string", "description": "string", "tactic_severity": 0-100, "book_title": "string", "book_author": "string", "mirror_test": "string — one question asking how the argument changes if roles were reversed", "evidence_integrity": "string or null — null if the claim has supporting evidence, otherwise: 'No peer-reviewed data or verified public record supports this claim.'" },
   "ai_generated": { "detected": false, "confidence": "none", "signals": [] }
 }
 
@@ -311,6 +311,14 @@ News verification guide (for news_verification_score / news_verification_label /
 Manipulation tactic guide (for manipulation_tactic):
 - ONLY populate if one dominant rhetorical manipulation tactic is clearly central to the post — not incidental.
 - Return null for constructive criticism, blunt-but-honest posts, posts defending documented victims of harm, or legitimate hypocrisy calling (pointing out contradictions between someone's stated values and their actions).
+- tactic_severity: 0–100 measuring how deliberately and severely the tactic is deployed. High = obvious, intentional, high-impact manipulation. Low = mild or incidental. Use the full range:
+  • 85–100: Deliberate institutional or political manipulation (government using religion, dehumanization by public figures, state-backed propaganda)
+  • 65–84: Clear and intentional manipulation by a high-follower or media account
+  • 40–64: Moderate — tactic is present but may be partially incidental or low-reach
+  • 10–39: Mild — tactic is present but does not appear to be the primary intent
+  Government Religious Nationalism by an official .gov or law enforcement account → severity 88–95
+  Dehumanizing language by a high-reach political figure → severity 85–92
+  Fear-mongering with verifiably false statistics → severity 75–85
 - When detected, return: {"name":"<tactic>","description":"<1 sentence plain-English explanation of how it is used in THIS specific post>","book_title":"<book>","book_author":"<author>","mirror_test":"<one question: how would this argument change if the subject and target groups were reversed?>","evidence_integrity":"<null if evidence exists, otherwise: 'No peer-reviewed data or verified public record supports this claim.'>"}
 - Use EXACTLY these tactic names and paired book recommendations:
   "Semantic Deflection" (argues about word choice or framing to avoid addressing the real issue) → "Thank You for Arguing" by Jay Heinrichs
