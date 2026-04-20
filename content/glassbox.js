@@ -210,7 +210,7 @@
     const desc  = RESONANCE_DESCRIPTIONS[label] || '';
 
     const isNegative = label === 'Hostile' || label === 'Dismissive';
-    const displayPct = isNegative ? (100 - resonance.score) : resonance.score;
+    const displayPct = 100 - resonance.score;
     const scoreIcon  = label === 'Hostile' ? '💢' : label === 'Dismissive' ? '⚠️' : label === 'Neutral' ? '💬' : '✅';
 
     const TEXT    = '#111827';

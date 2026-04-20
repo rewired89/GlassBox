@@ -280,19 +280,20 @@ Weaponized religion: invoking God, scripture, or "Christian values" to justify e
 Key signals of weaponization: speaker holds institutional/political power, religion is used to define who belongs in the nation, scripture is deployed to silence opposition or justify harm to a group.
 
 Calibration anchors — use these to calibrate, not cluster:
-Government + religion examples (score low — institutional power weaponizing religion):
-"@DHSgov: 'Trust in the Lord... One nation under God.'" → 28 (False Moral Authority + government_religious_nationalism — federal law enforcement defining national identity through Christian scripture)
-"The Bible tells us to respect the law. That's why we enforce the border." (government official) → 25
-"God chose America and God chose this president." (political figure) → 15
+NOTE on display: the resonance_score you return is INVERTED for display. A score of 20 shows to the user as 80% (very bad). A score of 80 shows as 20% (mostly fine). So score BAD content LOW and GOOD content HIGH.
 
-Hypocrisy calling examples (score Neutral — legitimate accountability):
-"I will never understand how millions of Christians follow the most un-Christlike person imaginable." → 55 (frustration at documented hypocrisy, not attacking religion itself)
-"How can you say you love America and then try to destroy its institutions?" → 58
-"These people claim to be pro-family but their policies harm families every day." → 60
+Government + religion examples (score low = displays as high/bad):
+"@DHSgov: 'Trust in the Lord... One nation under God.'" → score 15 (displays as 85% — very bad: False Moral Authority + government_religious_nationalism)
+"The Bible tells us to respect the law. That's why we enforce the border." (government official) → score 20 (displays as 80%)
+"God chose America and God chose this president." (political figure) → score 10 (displays as 90%)
 
-Genuine faith examples (score Empathetic — private expression):
-"Praying for everyone affected by this tragedy. God bless." → 82
-"This scripture gives me strength today." → 85
+Hypocrisy calling examples (score mid = displays as mid/neutral):
+"I will never understand how millions of Christians follow the most un-Christlike person imaginable." → score 55 (displays as 45% — frustration at hypocrisy, not manipulation)
+"How can you say you love America and then try to destroy its institutions?" → score 58 (displays as 42%)
+
+Genuine faith examples (score high = displays as low/fine):
+"Praying for everyone affected by this tragedy. God bless." → score 82 (displays as 18% — good content)
+"This scripture gives me strength today." → score 85 (displays as 15%)
 "immigrants are an invasion of vermin" → 5
 "[politician] is trying to make investigating fraud illegal" (false fearful claim) → 20
 "This policy will destroy the country" (vague hyperbole, no evidence) → 27
