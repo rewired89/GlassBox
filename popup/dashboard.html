@@ -414,37 +414,6 @@
 
     .save-indicator--visible { opacity: 1; }
 
-    .api-key-input {
-      width: 100%;
-      padding: 8px 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-      font-size: 12px;
-      box-sizing: border-box;
-      font-family: monospace;
-    }
-
-    .api-key-input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .api-key-notice {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-top: 4px;
-    }
-
-    .api-key-notice a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
-    .api-key-notice a:hover { text-decoration: underline; }
-
     /* ─── Footer ─────────────────────────────────────────────────────────────── */
     .footer {
       padding: 8px 16px 12px;
@@ -517,22 +486,6 @@
 
   <!-- Settings Panel -->
   <div class="panel" id="panel-settings" role="tabpanel">
-
-    <div class="settings-group">
-      <div class="settings-group__title">AI Analysis — Your API Key</div>
-      <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px">
-        <div class="settings-row__label">Anthropic API Key</div>
-        <input type="password" id="setting-anthropic-key" class="api-key-input"
-          placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-        <div class="api-key-notice">
-          GlassBox uses <strong>your own key</strong> — AI calls are billed to your account, not the developer's.
-          Get a free key at <a href="https://console.anthropic.com/keys" target="_blank">console.anthropic.com/keys</a>
-          (free tier is enough for personal use). Without a key, credibility badges and local pattern detection still work.
-        </div>
-        <div id="key-status" style="font-size:11px;color:var(--text-muted)"></div>
-      </div>
-    </div>
-
     <div class="settings-group">
       <div class="settings-group__title">API Connection</div>
       <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding:12px">

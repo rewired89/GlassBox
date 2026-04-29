@@ -14,7 +14,6 @@ const DEFAULT_SETTINGS = {
   prePostReflection: true,
   manipulationThreshold: 'medium',
   credibilityMinScore: 4,
-  anthropicKey: '',
 };
 
 const TACTIC_LABELS = {
@@ -217,8 +216,6 @@ async function loadSettings() {
   document.getElementById('setting-threshold').value      = s.manipulationThreshold || 'medium';
   document.getElementById('setting-min-cred').value       = String(s.credibilityMinScore || 4);
   document.getElementById('setting-api-url').value        = s.apiUrl || '';
-  document.getElementById('setting-anthropic-key').value  = s.anthropicKey || '';
-  updateKeyStatus(s.anthropicKey || '');
   if (s.apiUrl) checkApiStatus(s.apiUrl);
 }
 
@@ -250,24 +247,6 @@ document.getElementById('setting-api-url').addEventListener('blur', e => {
   if (url) checkApiStatus(url);
 });
 
-function updateKeyStatus(key) {
-  const el = document.getElementById('key-status');
-  if (!key) {
-    el.textContent = 'No key set — AI analysis disabled. Credibility badges and local detection still work.';
-    el.style.color = 'var(--text-muted)';
-  } else if (key.startsWith('sk-ant-')) {
-    el.textContent = '✓ Key saved — AI analysis enabled';
-    el.style.color = 'var(--green)';
-  } else {
-    el.textContent = '⚠ Key format looks wrong — Anthropic keys start with sk-ant-';
-    el.style.color = 'var(--amber)';
-  }
-}
-
-document.getElementById('setting-anthropic-key').addEventListener('blur', e => {
-  updateKeyStatus(e.target.value.trim());
-});
-
 document.getElementById('save-settings').addEventListener('click', async () => {
   const newSettings = {};
   for (const [elId, key] of Object.entries(settingFields)) {
@@ -276,7 +255,6 @@ document.getElementById('save-settings').addEventListener('click', async () => {
       : el.type === 'number' ? Number(el.value) : el.value;
   }
   newSettings.apiUrl = normalizeUrl(document.getElementById('setting-api-url').value);
-  newSettings.anthropicKey = document.getElementById('setting-anthropic-key').value.trim();
   await saveSettings(newSettings);
   const ind = document.getElementById('save-indicator');
   ind.classList.add('save-indicator--visible');
