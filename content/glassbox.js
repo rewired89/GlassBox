@@ -146,6 +146,9 @@
   // ── API client ────────────────────────────────────────────────────────────────
   const _cache = new Map();
 
+  // Sentinel returned when the user has no API key set — distinct from a real null (network error)
+  const NO_KEY_SENTINEL = Symbol('no_key');
+
   async function callAPI(text, imageUrls, handle) {
     const settings = await getSettings();
     if (!settings.apiUrl) return null;
@@ -153,13 +156,20 @@
     const key = await hashString(text.slice(0, 300) + (handle || '') + String(imageUrls.length));
     if (_cache.has(key)) return _cache.get(key);
 
+    const headers = { 'Content-Type': 'application/json' };
+    if (settings.anthropicKey) headers['X-Anthropic-Key'] = settings.anthropicKey;
+
     try {
       const res = await fetch(`${settings.apiUrl.replace(/\/$/, '')}/api/analyze`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ text, imageUrls, handle, platform: platformName }),
-        signal:  AbortSignal.timeout(15_000),
+        method: 'POST',
+        headers,
+        body:   JSON.stringify({ text, imageUrls, handle, platform: platformName }),
+        signal: AbortSignal.timeout(15_000),
       });
+      if (res.status === 402) {
+        // No user API key provided — signal the caller to show the setup notice
+        return NO_KEY_SENTINEL;
+      }
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         console.error(`[GlassBox] API ${res.status} error:`, errBody.detail || errBody.error || res.statusText);
@@ -167,7 +177,6 @@
       }
       const data = await res.json();
       _cache.set(key, data);
-      // Expire after 10 minutes
       setTimeout(() => _cache.delete(key), 600_000);
       return data;
     } catch {
@@ -693,6 +702,26 @@
       processedPosts.delete(postEl);
       return;
     }
+    if (result === NO_KEY_SENTINEL) {
+      // Show a one-time notice on the first post that needs AI analysis
+      if (!document.querySelector('[data-glassbox="no-key-notice"]')) {
+        const insertPoint = textEl?.parentElement ?? postEl;
+        const notice = document.createElement('div');
+        notice.setAttribute('data-glassbox', 'no-key-notice');
+        notice.style.cssText = [
+          'display:inline-flex', 'align-items:center', 'gap:6px',
+          'margin:4px 0', 'padding:5px 10px',
+          'background:#1d9bf018', 'border-left:3px solid #1d9bf0',
+          'border-radius:0 4px 4px 0',
+          'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+          'font-size:11px', 'color:#374151',
+        ].join(';');
+        notice.innerHTML = '🔍 <strong>GlassBox</strong>: AI analysis disabled — add your free Anthropic API key in <strong>Settings</strong> to enable it.';
+        insertPoint.insertBefore(notice, textEl?.nextSibling ?? null);
+      }
+      return;
+    }
+
     if (!result) {
       // API timed out or returned nothing — likely a Railway cold start.
       // Remove from processedPosts so we can retry, up to 2 times.

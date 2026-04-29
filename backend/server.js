@@ -28,9 +28,10 @@ const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
 if (!process.env.ANTHROPIC_API_KEY) {
-  console.warn('[warn] ANTHROPIC_API_KEY not set — /api/analyze will fail');
+  console.warn('[warn] ANTHROPIC_API_KEY not set — admin research endpoints will fail');
 }
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'missing' });
+// Admin-only Anthropic client (used for /api/admin research runs, not public analysis)
+const anthropicAdmin = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'missing' });
 
 // ── JSON file fallback (used when no DATABASE_URL) ────────────────────────────
 const FIGURES_FILE = path.join(DATA_DIR, 'figures.json');
@@ -212,7 +213,7 @@ function requireAdmin(req, res, next) {
 }
 
 // ── Claude: analyze a post ────────────────────────────────────────────────────
-async function claudeAnalyze(text, imageUrls, figure) {
+async function claudeAnalyze(text, imageUrls, figure, client) {
   const figCtx = figure ? `\nAuthor: ${figure.name} (${figure.role || 'public figure'})
 Legal record: ${(figure.legal_proceedings || []).length} proceedings on file
 Mirror note: ${figure.mirror_note || 'none'}` : '';
@@ -305,7 +306,7 @@ AI-generated content detection (ai_generated field):
 - If no images were provided, return detected:false, confidence:"none", signals:[].
 - Return detected:false for clearly genuine photographs even if the scene looks staged.` });
 
-  const resp = await anthropic.messages.create({
+  const resp = await client.messages.create({
     model: 'claude-opus-4-5',
     max_tokens: 1200,
     messages: [{ role: 'user', content }],
@@ -370,7 +371,7 @@ async function lookupNSOPW(name) {
 
 // ── Claude: research a person's public records ────────────────────────────────
 async function claudeResearch(name, handles) {
-  const resp = await anthropic.messages.create({
+  const resp = await anthropicAdmin.messages.create({
     model: 'claude-opus-4-5',
     max_tokens: 4096,
     messages: [{ role: 'user', content: `You are a public records researcher for a safety and accountability tool.
@@ -461,10 +462,13 @@ const adminLimit    = rateLimit({ windowMs: 60_000, max: 60 });
 
 app.get('/', (req, res) => res.redirect('/admin'));
 
-// Minimal Claude connectivity test — no auth required
+// Connectivity test — requires the user's API key in the X-Anthropic-Key header
 app.get('/api/test-claude', async (req, res) => {
+  const userKey = req.headers['x-anthropic-key'];
+  if (!userKey) return res.status(400).json({ ok: false, error: 'api_key_required', message: 'Provide your Anthropic API key in the X-Anthropic-Key header.' });
   try {
-    const r = await anthropic.messages.create({
+    const client = new Anthropic({ apiKey: userKey });
+    const r = await client.messages.create({
       model: 'claude-opus-4-5',
       max_tokens: 30,
       messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
@@ -498,12 +502,13 @@ app.get('/api/health', async (req, res) => {
   });
 });
 
-// Analyze a post
+// Analyze a post — requires user's own Anthropic API key in X-Anthropic-Key header
 app.post('/api/analyze', analysisLimit, async (req, res) => {
+  const userKey = req.headers['x-anthropic-key'];
   const { text, imageUrls = [], handle = null } = req.body;
   const hasText = text && text.trim().length >= 10;
 
-  // No text but we have a handle — return just the figure card, skip Claude
+  // No text but we have a handle — return just the figure card (free, no AI needed)
   if (!hasText) {
     if (!handle) return res.status(400).json({ error: 'text required' });
     const figure = await store.getFigure(handle);
@@ -524,14 +529,23 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
     });
   }
 
+  // AI analysis requires the user to supply their own Anthropic API key
+  if (!userKey) {
+    return res.status(402).json({
+      error: 'api_key_required',
+      message: 'AI analysis requires your own Anthropic API key. Add it in the GlassBox Settings tab.',
+    });
+  }
+
   const cacheKey = sha(text.slice(0, 600) + (handle || '') + String((imageUrls || []).length));
   const cached = await store.getCache(cacheKey);
   if (cached) return res.json(cached);
 
   const figure = handle ? await store.getFigure(handle) : null;
+  const userClient = new Anthropic({ apiKey: userKey });
 
   try {
-    const ai = await claudeAnalyze(text, imageUrls, figure);
+    const ai = await claudeAnalyze(text, imageUrls, figure, userClient);
     const contextCard = ai.context_card_topic
       ? (CONTEXT_CARDS.find(c => c.id === ai.context_card_topic)?.card || null)
       : null;
