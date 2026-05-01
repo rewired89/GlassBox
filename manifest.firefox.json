@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "GlassBox",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "AI-powered fact-checking and accountability — see the real context behind posts on any social media.",
   "icons": {
     "16": "icons/icon16.png",
@@ -18,7 +18,8 @@
   },
   "background": {
     "service_worker": "background/service-worker.js",
-    "type": "module"
+    "type": "module",
+    "scripts": ["background/service-worker.js"]
   },
   "content_scripts": [
     {
@@ -56,7 +57,11 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "glassbox@rewired89.com",
-      "strict_min_version": "112.0"
+      "strict_min_version": "112.0",
+      "data_collection_permissions": {
+        "required": [],
+        "optional": []
+      }
     }
   },
   "content_security_policy": {

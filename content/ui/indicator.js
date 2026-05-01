@@ -3,7 +3,7 @@
  * Renders a small inline badge for manipulation or credibility signals.
  */
 
-import { formatCredibility, getTacticLabel, getTacticIcon } from '../../lib/utils.js';
+import { formatCredibility, getTacticLabel, getTacticIcon, escHTML } from '../../lib/utils.js';
 
 /**
  * Create a credibility badge element.
@@ -22,7 +22,7 @@ export function createCredibilityBadge(badge, onExpand) {
     btn.textContent = `🎭 Satire`;
   } else if (badge.score != null) {
     const cred = formatCredibility(badge.score);
-    btn.innerHTML = `<span>✓ ${cred.label}</span>`;
+    btn.innerHTML = `<span>✓ ${escHTML(cred.label)}</span>`;
   } else {
     btn.textContent = `? Unrated`;
   }
@@ -111,7 +111,7 @@ export function showCredibilityPopover(badge, anchorEl) {
     : '#9ca3af';
 
   let scoreDisplay = badge.score != null
-    ? `<div class="gb-popover__score" style="color:${scoreColor}">${badge.score}/10</div>`
+    ? `<div class="gb-popover__score" style="color:${scoreColor}">${escHTML(String(badge.score))}/10</div>`
     : `<div class="gb-popover__score" style="color:#a855f7">Satire</div>`;
 
   let strengthsHTML = '';
@@ -120,7 +120,7 @@ export function showCredibilityPopover(badge, anchorEl) {
       <div class="gb-popover__section">
         <div class="gb-popover__section-title">Strengths</div>
         <ul class="gb-popover__list">
-          ${badge.strengths.map((s) => `<li>${s}</li>`).join('')}
+          ${badge.strengths.map((s) => `<li>${escHTML(s)}</li>`).join('')}
         </ul>
       </div>`;
   }
@@ -131,7 +131,7 @@ export function showCredibilityPopover(badge, anchorEl) {
       <div class="gb-popover__section">
         <div class="gb-popover__section-title">Considerations</div>
         <ul class="gb-popover__list">
-          ${badge.considerations.map((c) => `<li>${c}</li>`).join('')}
+          ${badge.considerations.map((c) => `<li>${escHTML(c)}</li>`).join('')}
         </ul>
       </div>`;
   }
@@ -143,7 +143,7 @@ export function showCredibilityPopover(badge, anchorEl) {
     </div>
     ${scoreDisplay}
     <div class="gb-popover__meta">
-      ${badge.label} &bull; ${badge.bias || 'Unknown bias'} &bull; ${badge.fact_check_record || ''}
+      ${escHTML(badge.label)} &bull; ${escHTML(badge.bias || 'Unknown bias')} &bull; ${escHTML(badge.fact_check_record || '')}
     </div>
     <hr class="gb-popover__divider">
     ${strengthsHTML}
@@ -181,10 +181,10 @@ export function showManipulationPopover(analysisResult, anchorEl) {
     .map(
       (t) => `
       <li>
-        <span>${t.icon}</span>
+        <span>${escHTML(t.icon)}</span>
         <div>
-          <strong style="color:#e7e9ea">${t.label}</strong>
-          <div style="font-size:11px;color:#9ca3af;margin-top:2px">${t.description}</div>
+          <strong style="color:#e7e9ea">${escHTML(t.label)}</strong>
+          <div style="font-size:11px;color:#9ca3af;margin-top:2px">${escHTML(t.description)}</div>
         </div>
       </li>`
     )
@@ -196,8 +196,8 @@ export function showManipulationPopover(analysisResult, anchorEl) {
       <button class="gb-popover__close" aria-label="Close">✕</button>
     </div>
     <div class="gb-popover__meta">
-      ${analysisResult.tactics.length} tactic${analysisResult.tactics.length !== 1 ? 's' : ''} detected
-      &bull; ${Math.round(analysisResult.confidence * 100)}% confidence
+      ${escHTML(String(analysisResult.tactics.length))} tactic${analysisResult.tactics.length !== 1 ? 's' : ''} detected
+      &bull; ${escHTML(String(Math.round(analysisResult.confidence * 100)))}% confidence
     </div>
     <hr class="gb-popover__divider">
     <ul class="gb-popover__list" style="gap:8px;display:flex;flex-direction:column">
