@@ -9,7 +9,7 @@
 import express   from 'express';
 import cors      from 'cors';
 import rateLimit from 'express-rate-limit';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import crypto    from 'crypto';
 import path      from 'path';
 import fs        from 'fs';
@@ -27,10 +27,11 @@ const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  console.warn('[warn] ANTHROPIC_API_KEY not set — /api/analyze will fail');
+if (!process.env.GEMINI_API_KEY) {
+  console.warn('[warn] GEMINI_API_KEY not set — AI analysis and research will fail');
 }
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || 'missing' });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'missing');
+const geminiFlash = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 // ── JSON file fallback (used when no DATABASE_URL) ────────────────────────────
 const FIGURES_FILE = path.join(DATA_DIR, 'figures.json');
@@ -211,15 +212,14 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ── Claude: analyze a post ────────────────────────────────────────────────────
+// ── Gemini: analyze a post ────────────────────────────────────────────────────
 async function claudeAnalyze(text, imageUrls, figure) {
   const figCtx = figure ? `\nAuthor: ${figure.name} (${figure.role || 'public figure'})
 Legal record: ${(figure.legal_proceedings || []).length} proceedings on file
 Mirror note: ${figure.mirror_note || 'none'}` : '';
 
-  const content = [];
+  const parts = [];
   for (const url of (imageUrls || []).slice(0, 3)) {
-    // Accept Twitter CDN (format= query param), Reddit, Imgur, and standard extension URLs
     const looksLikeImage =
       /^https:\/\/pbs\.twimg\.com\//.test(url) ||
       /^https:\/\/i\.redd\.it\//.test(url) ||
@@ -227,11 +227,22 @@ Mirror note: ${figure.mirror_note || 'none'}` : '';
       /[?&]format=(jpg|jpeg|png|gif|webp)/i.test(url) ||
       /^https:\/\/.+\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
     if (looksLikeImage) {
-      content.push({ type: 'image', source: { type: 'url', url } });
+      try {
+        const imgRes = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        if (imgRes.ok) {
+          const buf = await imgRes.arrayBuffer();
+          const mime = imgRes.headers.get('content-type') || 'image/jpeg';
+          parts.push({ inlineData: { mimeType: mime, data: Buffer.from(buf).toString('base64') } });
+        }
+      } catch { /* skip unloadable images */ }
     }
   }
 
+<<<<<<< HEAD
   content.push({ type: 'text', text: `You are a non-partisan fact-checking AI for a media literacy browser extension. Apply the same standards regardless of political affiliation. Your job is to detect manipulation of rhetoric and power — not to police personal opinions or frustration.
+=======
+  parts.push({ text: `You are a non-partisan fact-checking AI for a media literacy browser extension. Apply the same standards regardless of political affiliation.
+>>>>>>> 2cdd02f83f9b09651a996bc97c5b628096348ae3
 ${figCtx}
 
 POST TEXT:
@@ -351,12 +362,8 @@ AI-generated content detection (ai_generated field):
 - If no images were provided, return detected:false, confidence:"none", signals:[].
 - Return detected:false for clearly genuine photographs even if the scene looks staged.` });
 
-  const resp = await anthropic.messages.create({
-    model: 'claude-opus-4-5',
-    max_tokens: 1200,
-    messages: [{ role: 'user', content }],
-  });
-  const raw = resp.content[0].text.trim();
+  const resp = await geminiFlash.generateContent({ contents: [{ role: 'user', parts }] });
+  const raw = resp.response.text().trim();
   try { return JSON.parse(raw); }
   catch { const m = raw.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error('Non-JSON response'); }
 }
@@ -414,12 +421,9 @@ async function lookupNSOPW(name) {
   } catch { return null; }
 }
 
-// ── Claude: research a person's public records ────────────────────────────────
+// ── Gemini: research a person's public records ────────────────────────────────
 async function claudeResearch(name, handles) {
-  const resp = await anthropic.messages.create({
-    model: 'claude-opus-4-5',
-    max_tokens: 4096,
-    messages: [{ role: 'user', content: `You are a public records researcher for a safety and accountability tool.
+  const resp = await geminiFlash.generateContent(`You are a public records researcher for a safety and accountability tool.
 
 Research: ${name} (social handles: ${handles.map(h => '@' + h.replace(/^@/, '')).join(', ')})
 
@@ -487,9 +491,8 @@ CRITICAL RULES:
 - For sex offender registry: check nsopw.gov, state registries (megan's law, etc.)
 - For criminal records: check court documents, news archives, official sources
 - Use null or [] when no verifiable information found — never fabricate
-- A private individual with a public criminal record should have that record included` }],
-  });
-  const raw = resp.content[0].text.trim();
+- A private individual with a public criminal record should have that record included`);
+  const raw = resp.response.text().trim();
   try { return JSON.parse(raw); }
   catch { const m = raw.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw new Error('Non-JSON research response'); }
 }
@@ -507,15 +510,11 @@ const adminLimit    = rateLimit({ windowMs: 60_000, max: 60 });
 
 app.get('/', (req, res) => res.redirect('/admin'));
 
-// Minimal Claude connectivity test — no auth required
+// Minimal Gemini connectivity test — no auth required
 app.get('/api/test-claude', async (req, res) => {
   try {
-    const r = await anthropic.messages.create({
-      model: 'claude-opus-4-5',
-      max_tokens: 30,
-      messages: [{ role: 'user', content: 'Say "ok" and nothing else.' }],
-    });
-    res.json({ ok: true, reply: r.content[0]?.text || '(empty)', model: 'claude-opus-4-5' });
+    const r = await geminiFlash.generateContent('Say "ok" and nothing else.');
+    res.json({ ok: true, reply: r.response.text().trim(), model: 'gemini-1.5-flash' });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
@@ -524,7 +523,7 @@ app.get('/api/test-claude', async (req, res) => {
 // Debug endpoint — shows env var status without exposing values
 app.get('/api/debug', (req, res) => {
   res.json({
-    anthropic_key:  process.env.ANTHROPIC_API_KEY ? `set (${process.env.ANTHROPIC_API_KEY.slice(0,8)}…)` : 'MISSING',
+    gemini_key:     process.env.GEMINI_API_KEY ? `set (${process.env.GEMINI_API_KEY.slice(0,8)}…)` : 'MISSING',
     database_url:   process.env.DATABASE_URL      ? 'set' : 'not set (using JSON)',
     admin_key:      process.env.ADMIN_KEY          ? 'set' : 'using default',
     port:           PORT,
@@ -549,7 +548,7 @@ app.post('/api/analyze', analysisLimit, async (req, res) => {
   const { text, imageUrls = [], handle = null } = req.body;
   const hasText = text && text.trim().length >= 10;
 
-  // No text but we have a handle — return just the figure card, skip Claude
+  // No text but we have a handle — return just the figure card (free, no AI needed)
   if (!hasText) {
     if (!handle) return res.status(400).json({ error: 'text required' });
     const figure = await store.getFigure(handle);

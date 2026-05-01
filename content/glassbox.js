@@ -167,7 +167,6 @@
       }
       const data = await res.json();
       _cache.set(key, data);
-      // Expire after 10 minutes
       setTimeout(() => _cache.delete(key), 600_000);
       return data;
     } catch {
