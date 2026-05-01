@@ -4,6 +4,7 @@
  */
 
 import { recordCardInteraction } from '../../lib/storage.js';
+import { escHTML } from '../../lib/utils.js';
 
 let cardDatabase = null;
 
@@ -77,8 +78,8 @@ export function renderContextCard(cardDef) {
     .map(
       (item) => `
       <div class="gb-card__timeline-item">
-        <div class="gb-card__timeline-date">${item.date}</div>
-        <div class="gb-card__timeline-event">${item.event}</div>
+        <div class="gb-card__timeline-date">${escHTML(item.date)}</div>
+        <div class="gb-card__timeline-event">${escHTML(item.event)}</div>
       </div>`
     )
     .join('');
@@ -88,7 +89,7 @@ export function renderContextCard(cardDef) {
     ? `<div class="gb-card__sources">
         <div class="gb-card__sources-label">Sources</div>
         <ul class="gb-card__source-list">
-          ${card.sources.map((s) => `<li class="gb-card__source-item">${s}</li>`).join('')}
+          ${card.sources.map((s) => `<li class="gb-card__source-item">${escHTML(s)}</li>`).join('')}
         </ul>
       </div>`
     : '';
@@ -99,7 +100,7 @@ export function renderContextCard(cardDef) {
       ? `<div class="gb-card__rephrase">
           <div class="gb-card__rephrase-label">How to rephrase</div>
           ${cardDef.rephrase_suggestions
-            .map((r) => `<div class="gb-card__rephrase-item">${r}</div>`)
+            .map((r) => `<div class="gb-card__rephrase-item">${escHTML(r)}</div>`)
             .join('')}
         </div>`
       : '';
@@ -107,22 +108,22 @@ export function renderContextCard(cardDef) {
   wrapper.innerHTML = `
     <button class="gb-card__trigger" aria-expanded="false">
       <span class="gb-card__trigger-icon">📌</span>
-      <span class="gb-card__trigger-text">${card.hook}</span>
+      <span class="gb-card__trigger-text">${escHTML(card.hook)}</span>
       <span class="gb-card__trigger-arrow">▼</span>
     </button>
     <div class="gb-card__body">
-      <div class="gb-card__title">${card.title}</div>
+      <div class="gb-card__title">${escHTML(card.title)}</div>
 
       ${timelineHTML
         ? `<div class="gb-card__timeline">${timelineHTML}</div>`
         : ''}
 
       ${card.irony_highlight
-        ? `<div class="gb-card__highlight">${card.irony_highlight}</div>`
+        ? `<div class="gb-card__highlight">${escHTML(card.irony_highlight)}</div>`
         : ''}
 
       ${card.empathy_angle
-        ? `<div class="gb-card__empathy">💭 ${card.empathy_angle}</div>`
+        ? `<div class="gb-card__empathy">💭 ${escHTML(card.empathy_angle)}</div>`
         : ''}
 
       ${rephraseHTML}

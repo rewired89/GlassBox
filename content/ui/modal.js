@@ -3,7 +3,7 @@
  * Intercepts share/post actions and shows a reflection prompt.
  */
 
-import { getTacticLabel, getTacticIcon } from '../../lib/utils.js';
+import { getTacticLabel, getTacticIcon, escHTML } from '../../lib/utils.js';
 
 /**
  * Show the pre-post reflection modal.
@@ -59,7 +59,7 @@ export function showReflectionModal({ manipulation, toxicity, credibility, postT
 
   // Post text preview
   const previewHTML = postText
-    ? `<div style="font-size:12px;color:#6b7280;background:#0f1117;border-radius:8px;padding:8px 10px;margin-bottom:14px;border-left:3px solid #374151;font-style:italic">"${postText}"</div>`
+    ? `<div style="font-size:12px;color:#6b7280;background:#0f1117;border-radius:8px;padding:8px 10px;margin-bottom:14px;border-left:3px solid #374151;font-style:italic">"${escHTML(postText)}"</div>`
     : '';
 
   // Findings section
@@ -82,8 +82,8 @@ export function showReflectionModal({ manipulation, toxicity, credibility, postT
     ? `<ul class="gb-modal__tactic-list">
         ${tactics.map((t) => `
           <li class="gb-modal__tactic-item">
-            <span>${t.icon}</span>
-            <span class="gb-modal__tactic-badge">${t.label}</span>
+            <span>${escHTML(t.icon)}</span>
+            <span class="gb-modal__tactic-badge">${escHTML(t.label)}</span>
           </li>`).join('')}
       </ul>`
     : '';
